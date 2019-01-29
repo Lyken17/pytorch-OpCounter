@@ -39,7 +39,7 @@ def profile(model, input_size, custom_ops={}):
 		elif m_type in register_hooks:
 			fn = register_hooks[m_type]
 		else:
-			logging.warning("Not implemented for ", m)
+			logging.warning("Not implemented for %s" % str(m))
 
 		if fn is not None:
 			logging.info("Register FLOP counter for module %s" % str(m))

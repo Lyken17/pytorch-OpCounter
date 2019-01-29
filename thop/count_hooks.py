@@ -15,8 +15,8 @@ def count_conv2d(m, x, y):
 	kh, kw = m.kernel_size
 	batch_size = x.size()[0]
 
-	out_w = y.size(2) // m.stride[0]
-	out_h = y.size(3) // m.stride[1]
+	out_h = y.size(2)
+	out_w = y.size(3)
 
 	# ops per output element
 	# kernel_mul = kh * kw * cin

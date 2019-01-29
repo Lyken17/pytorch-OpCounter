@@ -6,6 +6,7 @@ from .count_hooks import *
 
 register_hooks = {
 	nn.Conv2d: count_conv2d,
+	nn.ConvTranspose2d: count_convtranspose2d,
 	nn.BatchNorm2d: count_bn2d,
 	nn.ReLU: count_relu,
 	nn.ReLU6: count_relu,

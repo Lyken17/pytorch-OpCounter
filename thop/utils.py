@@ -21,7 +21,9 @@ register_hooks = {
 }
 
 
-def profile(model, input_size, custom_ops={}):
+def profile(model, input_size, custom_ops={}, quiet=False):
+	hook_handles = []
+
 	def add_hooks(m):
 		if len(list(m.children())) > 0:
 			return
@@ -43,8 +45,17 @@ def profile(model, input_size, custom_ops={}):
 			logging.warning("Not implemented for %s" % str(m))
 
 		if fn is not None:
-			logging.info("Register FLOP counter for module %s" % str(m))
-			m.register_forward_hook(fn)
+			hook_handles.append(m.register_forward_hook(fn))
+			if not quiet:
+				logging.info("Register FLOP counter for module %s" % str(m))
+
+	def remove_keys(m):
+		if hasattr(m, 'total_ops'):
+			delattr(m, "total_ops")
+		if hasattr(m, 'total_params'):
+			delattr(m, "total_params")
+
+
 
 	model.eval()
 	model.apply(add_hooks)
@@ -62,5 +73,10 @@ def profile(model, input_size, custom_ops={}):
 
 	total_ops = total_ops.item()
 	total_params = total_params.item()
+
+	# clean up
+	model.apply(remove_keys)
+	for handle in hook_handles:
+		handle.remove()
 
 	return total_ops, total_params

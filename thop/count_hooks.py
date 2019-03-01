@@ -7,7 +7,6 @@ multiply_adds = 1
 
 
 def count_conv2d(m, x, y):
-	# TODO: add support for pad and dilation
 	x = x[0]
 
 	cin = m.in_channels
@@ -35,7 +34,6 @@ def count_conv2d(m, x, y):
 
 
 def count_convtranspose2d(m, x, y):
-	# TODO: add support for pad and dilation
 	x = x[0]
 
 	cin = m.in_channels

@@ -20,7 +20,7 @@ register_hooks = {
 }
 
 
-def profile(model, input_size, custom_ops={}):
+def profile(model, input_size, custom_ops={}, device="cpu"):
 	def add_hooks(m):
 		if len(list(m.children())) > 0:
 			return
@@ -45,10 +45,10 @@ def profile(model, input_size, custom_ops={}):
 			logging.info("Register FLOP counter for module %s" % str(m))
 			m.register_forward_hook(fn)
 
-	model.eval()
+	model.eval().to(device)
 	model.apply(add_hooks)
 
-	x = torch.zeros(input_size)
+	x = torch.zeros(input_size).to(device)
 	model(x)
 
 	total_ops = 0

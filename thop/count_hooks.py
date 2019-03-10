@@ -62,16 +62,14 @@ def count_convtranspose2d(m, x, y):
 	m.total_ops += torch.Tensor([int(total_ops)])
 
 
-def count_bn2d(m, x, y):
+def count_bn(m, x, y):
 	x = x[0]
 
 	nelements = x.numel()
-	total_sub = nelements
-	total_div = nelements
-	total_ops = total_sub + total_div
+	# subtract, divide, gamma, beta
+	total_ops = 4*nelements
 
 	m.total_ops += torch.Tensor([int(total_ops)])
-
 
 def count_relu(m, x, y):
 	x = x[0]

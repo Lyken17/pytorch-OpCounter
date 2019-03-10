@@ -101,7 +101,7 @@ def count_maxpool(m, x, y):
 	m.total_ops += torch.Tensor([int(total_ops)])
 
 def count_adap_maxpool(m, x, y):
-	kernel = torch.Tensor([*(x[0].shape[2:])])//torch.Tensor(m.output_size)
+	kernel = torch.Tensor([*(x[0].shape[2:])])//torch.Tensor(list((m.output_size,))).squeeze()
 	kernel_ops = torch.prod(kernel) - 1
 	num_elements = y.numel()
 	total_ops = kernel_ops * num_elements
@@ -119,7 +119,7 @@ def count_avgpool(m, x, y):
 	m.total_ops += torch.Tensor([int(total_ops)])
 
 def count_adap_avgpool(m, x, y):
-	kernel = torch.Tensor([*(x[0].shape[2:])])//torch.Tensor(m.output_size)
+	kernel = torch.Tensor([*(x[0].shape[2:])])//torch.Tensor(list((m.output_size,))).squeeze()
 	total_add = torch.prod(kernel) - 1
 	total_div = 1
 	kernel_ops = total_add + total_div

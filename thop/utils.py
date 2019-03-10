@@ -8,6 +8,7 @@ register_hooks = {
     nn.Conv2d: count_conv2d,
     nn.BatchNorm1d: count_bn,
     nn.BatchNorm2d: count_bn,
+    nn.BatchNorm3d: count_bn,
     nn.ReLU: count_relu,
     nn.ReLU6: count_relu,
     nn.MaxPool1d: count_maxpool,
@@ -16,6 +17,9 @@ register_hooks = {
     nn.AvgPool1d: count_avgpool,
     nn.AvgPool2d: count_avgpool,
     nn.AvgPool3d: count_avgpool,
+    nn.AdaptiveAvgPool1d: count_adap_avgpool,
+    nn.AdaptiveAvgPool2d: count_adap_avgpool,
+    nn.AdaptiveAvgPool3d: count_adap_avgpool,
     nn.Linear: count_linear,
     nn.Dropout: None,
 }

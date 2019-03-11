@@ -29,7 +29,6 @@ def count_conv2d(m, x, y):
 	output_elements = batch_size * out_w * out_h * cout
 	total_ops = output_elements * ops_per_element
 
-	# in case same conv is used multiple times
 	m.total_ops = torch.Tensor([int(total_ops)])
 
 
@@ -58,7 +57,6 @@ def count_convtranspose2d(m, x, y):
 	output_elements = y.nelement()
 	total_ops = output_elements * ops_per_element
 
-	# in case same conv is used multiple times
 	m.total_ops = torch.Tensor([int(total_ops)])
 
 

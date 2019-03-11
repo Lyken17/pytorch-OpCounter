@@ -30,7 +30,7 @@ def count_conv2d(m, x, y):
 	total_ops = output_elements * ops_per_element
 
 	# in case same conv is used multiple times
-	m.total_ops += torch.Tensor([int(total_ops)])
+	m.total_ops = torch.Tensor([int(total_ops)])
 
 
 def count_convtranspose2d(m, x, y):
@@ -59,19 +59,17 @@ def count_convtranspose2d(m, x, y):
 	total_ops = output_elements * ops_per_element
 
 	# in case same conv is used multiple times
-	m.total_ops += torch.Tensor([int(total_ops)])
+	m.total_ops = torch.Tensor([int(total_ops)])
 
 
-def count_bn2d(m, x, y):
+def count_bn(m, x, y):
 	x = x[0]
 
 	nelements = x.numel()
-	total_sub = nelements
-	total_div = nelements
-	total_ops = total_sub + total_div
+	# subtract, divide, gamma, beta
+	total_ops = 4*nelements
 
-	m.total_ops += torch.Tensor([int(total_ops)])
-
+	m.total_ops = torch.Tensor([int(total_ops)])
 
 def count_relu(m, x, y):
 	x = x[0]
@@ -79,7 +77,7 @@ def count_relu(m, x, y):
 	nelements = x.numel()
 	total_ops = nelements
 
-	m.total_ops += torch.Tensor([int(total_ops)])
+	m.total_ops = torch.Tensor([int(total_ops)])
 
 
 def count_softmax(m, x, y):
@@ -92,25 +90,43 @@ def count_softmax(m, x, y):
 	total_div = nfeatures
 	total_ops = batch_size * (total_exp + total_add + total_div)
 
-	m.total_ops += torch.Tensor([int(total_ops)])
+	m.total_ops = torch.Tensor([int(total_ops)])
 
 
 def count_maxpool(m, x, y):
-	kernel_ops = torch.prod(torch.Tensor([m.kernel_size])) - 1
+	kernel_ops = torch.prod(torch.Tensor([m.kernel_size]))
 	num_elements = y.numel()
 	total_ops = kernel_ops * num_elements
 
-	m.total_ops += torch.Tensor([int(total_ops)])
+	m.total_ops = torch.Tensor([int(total_ops)])
+
+def count_adap_maxpool(m, x, y):
+	kernel = torch.Tensor([*(x[0].shape[2:])])//torch.Tensor(list((m.output_size,))).squeeze()
+	kernel_ops = torch.prod(kernel)
+	num_elements = y.numel()
+	total_ops = kernel_ops * num_elements
+
+	m.total_ops = torch.Tensor([int(total_ops)])
 
 
 def count_avgpool(m, x, y):
-	total_add = torch.prod(torch.Tensor([m.kernel_size])) - 1
+	total_add = torch.prod(torch.Tensor([m.kernel_size]))
 	total_div = 1
 	kernel_ops = total_add + total_div
 	num_elements = y.numel()
 	total_ops = kernel_ops * num_elements
 
-	m.total_ops += torch.Tensor([int(total_ops)])
+	m.total_ops = torch.Tensor([int(total_ops)])
+
+def count_adap_avgpool(m, x, y):
+	kernel = torch.Tensor([*(x[0].shape[2:])])//torch.Tensor(list((m.output_size,))).squeeze()
+	total_add = torch.prod(kernel)
+	total_div = 1
+	kernel_ops = total_add + total_div
+	num_elements = y.numel()
+	total_ops = kernel_ops * num_elements
+
+	m.total_ops = torch.Tensor([int(total_ops)])
 
 
 def count_linear(m, x, y):
@@ -120,4 +136,4 @@ def count_linear(m, x, y):
 	num_elements = y.numel()
 	total_ops = (total_mul + total_add) * num_elements
 
-	m.total_ops += torch.Tensor([int(total_ops)])
+	m.total_ops = torch.Tensor([int(total_ops)])

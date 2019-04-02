@@ -1,1 +1,1 @@
-from .utils import profile
+from .profile import profile

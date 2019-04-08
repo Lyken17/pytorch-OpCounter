@@ -7,8 +7,10 @@ from torch.nn.modules.conv import _ConvNd
 from .count_hooks import *
 
 register_hooks = {
-    # nn.Conv2d: count_conv2d,
-    _ConvNd: count_convNd,
+    nn.Conv1d: count_convNd,
+    nn.Conv2d: count_convNd,
+    nn.Conv3d: count_convNd,
+    nn.ConvTranspose2d: count_convtranspose2d,
 
     nn.BatchNorm1d: count_bn,
     nn.BatchNorm2d: count_bn,
@@ -16,6 +18,7 @@ register_hooks = {
 
     nn.ReLU: count_relu,
     nn.ReLU6: count_relu,
+    nn.LeakyReLU: count_relu,
 
     nn.MaxPool1d: count_maxpool,
     nn.MaxPool2d: count_maxpool,
@@ -38,6 +41,7 @@ register_hooks = {
 
 def profile(model, input_size, custom_ops={}, device="cpu"):
     handler_collection = []
+
     def add_hooks(m):
         if len(list(m.children())) > 0:
             return

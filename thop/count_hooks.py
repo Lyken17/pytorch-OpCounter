@@ -9,7 +9,7 @@ multiply_adds = 1
 def count_convNd(m, x, y):
     x = x[0]
     cin = m.in_channels
-    batch_size = x.size(0)
+    # batch_size = x.size(0)
 
     kernel_ops = m.weight.size()[2:].numel()
     bias_ops = 1 if m.bias is not None else 0
@@ -17,7 +17,7 @@ def count_convNd(m, x, y):
     output_elements = y.nelement()
 
     # cout x oW x oH
-    total_ops = batch_size * cin * output_elements * ops_per_element // m.groups
+    total_ops = cin * output_elements * ops_per_element // m.groups
     m.total_ops = torch.Tensor([int(total_ops)])
 
 
@@ -53,7 +53,7 @@ def count_convtranspose2d(m, x, y):
     cin = m.in_channels
     cout = m.out_channels
     kh, kw = m.kernel_size
-    batch_size = x.size()[0]
+    # batch_size = x.size()[0]
 
     out_h = y.size(2)
     out_w = y.size(3)

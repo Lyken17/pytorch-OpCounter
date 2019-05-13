@@ -64,11 +64,6 @@ def count_convtranspose2d(m, x, y):
     kernel_ops = multiply_adds * kh * kw * cin // m.groups
     bias_ops = 1 if m.bias is not None else 0
     ops_per_element = kernel_ops + bias_ops
-
-    # total ops
-    # num_out_elements = y.numel()
-    # output_elements = batch_size * out_w * out_h * cout
-    ops_per_element = m.weight.nelement()
     output_elements = y.nelement()
     total_ops = output_elements * ops_per_element
 

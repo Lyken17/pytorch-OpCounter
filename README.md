@@ -29,6 +29,11 @@
                             custom_ops={YourModule: count_your_model})
     ```
     
+* Model with multiple inputs.
+    ```python
+    flops, params = profile(model, input_size=[(1, 3, 224,224), (1, 3, 224, 224)])
+    ```
+    
 ## Results on Recent Models
 Model | Params(M) | FLOPs(G)
 ---|---|---

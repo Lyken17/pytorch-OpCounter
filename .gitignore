@@ -1,6 +1,8 @@
 *test*
 *.t7
 *.pth
+./*.py
+!./setup.py
 
 .idea/
 # Byte-compiled / optimized / DLL files

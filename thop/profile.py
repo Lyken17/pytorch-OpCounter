@@ -39,12 +39,16 @@ register_hooks = {
 }
 
 
-def profile(model, input_size, custom_ops={}, device="cpu"):
+def profile(model, input_size, custom_ops={}, device="cpu", verbose=True):
     handler_collection = []
 
     def add_hooks(m):
         if len(list(m.children())) > 0:
             return
+
+        if hasattr(m, "total_ops") or hasattr(m, "total_params"):
+            raise Warning("Either .total_ops or .total_params is already defined in %s.\n"
+                          "Be careful, it might change your code's behavior." % str(m))
 
         m.register_buffer('total_ops', torch.zeros(1))
         m.register_buffer('total_params', torch.zeros(1))
@@ -54,16 +58,17 @@ def profile(model, input_size, custom_ops={}, device="cpu"):
 
         m_type = type(m)
         fn = None
-
-        if m_type in custom_ops:
+        if m_type in custom_ops:  # if defined both op maps, use custom_ops to overwrite.
             fn = custom_ops[m_type]
         elif m_type in register_hooks:
             fn = register_hooks[m_type]
-        else:
-            print("Not implemented for ", m)
 
-        if fn is not None:
-            print("Register FLOP counter for module %s" % str(m))
+        if fn is None:
+            if verbose:
+                print("THOP has not implemented counting method for ", m)
+        else:
+            if verbose:
+                print("Register FLOP counter for module %s" % str(m))
             handler = m.register_forward_hook(fn)
             handler_collection.append(handler)
 
@@ -88,6 +93,7 @@ def profile(model, input_size, custom_ops={}, device="cpu"):
     total_ops = total_ops.item()
     total_params = total_params.item()
 
+    # reset model to original status
     model.train(training).to(original_device)
     for handler in handler_collection:
         handler.remove()

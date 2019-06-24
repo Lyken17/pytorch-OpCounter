@@ -5,7 +5,8 @@ before_install:
 
 script:
   - rm -rf build/ dist/
-  - python3 setup.py sdist bdist_wheel
+  - python setup.py sdist bdist_wheel
+  - twine check  dist/*
   - twine upload dist/*
 
 #deploy:

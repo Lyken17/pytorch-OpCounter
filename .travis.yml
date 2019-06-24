@@ -3,10 +3,12 @@ language: python
 before_install:
   - pip install --upgrade pip
 
-script: python setup.py build
+script:
+  - python3 setup.py sdist bdist_wheel
+  - twine upload dist/*
 
-deploy:
-  provider: pypi
-  user: lykenz
-  password:
-    secure: dsSPk6OZzqUxeyEHNMKPoPSZcFNxpZyK8LdxJ2REdL9SermFoGG3yMo/pmD9TI+cYaQJDLKfTcyAHNT6DsRdA22aof/NLewbqJ06eNbSlaoJ8xsIx6oJ/CHkrnBCuDm+jLqOR+siCHySWPP125o3ZsOKf8um7DtKJyYS15Gbyg6i+mjy/gK6/jVEQonNSGXIebsiUcFpiPE1JjDSfoenZhxt2JCVlQwdylHa1QjgDtjMa6PA7s1zKFjiyzW38pJR49ChFkTtd6ZX38m+0s3L6+zymwf1l8mwVwv6e/YnePXNUz9Igqihmg2KP3pCHlzO90qB+OCo7TNerliGqACASznKYu+oY7GZ0Emwva6NUNnsFNwTAdz5MdFNZI6lBdK+HU0U5GCsqjZIyvJcJV09PoFYDcEqMHumBou/7tlwHjG/bHJwRa5vDlgOMekoYjuWm+WW7+nGJADzoUxCQoJvvFjt2kAxJERIXJvN7RRosYwbmCkwxJzxWJRNGh85EnXKujNLaPVG1MeNOV9R+YAxINKk/4DBoR6bLkB6L7SlYKLWxuL8dpQLOPo/3W5JDee9t0ihjtZ6mus5EaYBypLtsOTtpENaUbjywiXCqYcw0uh/j9kTVDYOB6IR1m7FpQAK7SUxtbinWQZzSp8Ti0eiiqrDjZbBWAFKj2sLrpFODJ8=
+#deploy:
+#  provider: pypi
+#  user: lykenz
+#  password:
+#    secure: dsSPk6OZzqUxeyEHNMKPoPSZcFNxpZyK8LdxJ2REdL9SermFoGG3yMo/pmD9TI+cYaQJDLKfTcyAHNT6DsRdA22aof/NLewbqJ06eNbSlaoJ8xsIx6oJ/CHkrnBCuDm+jLqOR+siCHySWPP125o3ZsOKf8um7DtKJyYS15Gbyg6i+mjy/gK6/jVEQonNSGXIebsiUcFpiPE1JjDSfoenZhxt2JCVlQwdylHa1QjgDtjMa6PA7s1zKFjiyzW38pJR49ChFkTtd6ZX38m+0s3L6+zymwf1l8mwVwv6e/YnePXNUz9Igqihmg2KP3pCHlzO90qB+OCo7TNerliGqACASznKYu+oY7GZ0Emwva6NUNnsFNwTAdz5MdFNZI6lBdK+HU0U5GCsqjZIyvJcJV09PoFYDcEqMHumBou/7tlwHjG/bHJwRa5vDlgOMekoYjuWm+WW7+nGJADzoUxCQoJvvFjt2kAxJERIXJvN7RRosYwbmCkwxJzxWJRNGh85EnXKujNLaPVG1MeNOV9R+YAxINKk/4DBoR6bLkB6L7SlYKLWxuL8dpQLOPo/3W5JDee9t0ihjtZ6mus5EaYBypLtsOTtpENaUbjywiXCqYcw0uh/j9kTVDYOB6IR1m7FpQAK7SUxtbinWQZzSp8Ti0eiiqrDjZbBWAFKj2sLrpFODJ8=

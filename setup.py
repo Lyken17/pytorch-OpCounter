@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-import os
+import os, sys
 import shutil
-import sys
+import datetime
+
 from setuptools import setup, find_packages
 from setuptools.command.install import install
 
@@ -16,22 +17,8 @@ requirements = [
 # import subprocess
 # commit_hash = subprocess.check_output("git rev-parse HEAD", shell=True).decode('UTF-8').rstrip()
 # VERSION += "_" + str(int(commit_hash, 16))[:8]
-import datetime
 VERSION += "_" + datetime.datetime.now().strftime('%Y%m%d%H%M')[2:]
-print(VERSION)
-
-class VerifyVersionCommand(install):
-    """Custom command to verify that the git tag matches our version"""
-    description = 'verify that the git tag matches our version'
-
-    def run(self):
-        tag = os.getenv('CIRCLE_TAG')
-
-        if tag != VERSION:
-            info = "Git tag: {0} does not match the version of this app: {1}".format(
-                tag, VERSION
-            )
-            sys.exit(info)
+# print(VERSION)
 
 setup(
     # Metadata

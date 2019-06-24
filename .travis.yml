@@ -1,5 +1,8 @@
 language: python
 
+before_install:
+  - pip install --upgrade pip
+
 deploy:
   provider: pypi
   user: lykenz

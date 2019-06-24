@@ -3,6 +3,8 @@ language: python
 before_install:
   - pip install --upgrade pip
 
+script: python setup.py build
+
 deploy:
   provider: pypi
   user: lykenz

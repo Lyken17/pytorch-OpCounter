@@ -1,7 +1,7 @@
 language: python
 
 before_install:
-  - pip install --upgrade pip
+  - pip install --upgrade pip twine
 
 script:
   - python3 setup.py sdist bdist_wheel

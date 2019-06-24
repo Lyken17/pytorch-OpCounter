@@ -7,12 +7,18 @@ from setuptools.command.install import install
 
 readme = open('README.md').read()
 
-VERSION = '0.0.22'
+VERSION = '0.0.23'
 
 requirements = [
     'torch',
 ]
 
+# import subprocess
+# commit_hash = subprocess.check_output("git rev-parse HEAD", shell=True).decode('UTF-8').rstrip()
+# VERSION += "_" + str(int(commit_hash, 16))[:8]
+import datetime
+VERSION += "_" + datetime.datetime.now().strftime('%Y%m%d%H%M')[2:]
+print(VERSION)
 
 class VerifyVersionCommand(install):
     """Custom command to verify that the git tag matches our version"""
@@ -27,7 +33,6 @@ class VerifyVersionCommand(install):
             )
             sys.exit(info)
 
-
 setup(
     # Metadata
     name='thop',
@@ -37,6 +42,7 @@ setup(
     url='https://github.com/Lyken17/pytorch-OpCounter/',
     description='A tool to count the FLOPs of PyTorch model.',
     long_description=readme,
+    long_description_content_type='text/markdown',
     license='MIT',
 
     # Package info

@@ -1,6 +1,7 @@
 *test*
 *.t7
 *.pth
+# only keep the setup.py under root folder
 ./*.py
 !./setup.py
 

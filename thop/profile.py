@@ -39,7 +39,7 @@ register_hooks = {
 }
 
 
-def profile(model, input_size, custom_ops={}, device="cpu", verbose=True):
+def profile(model, inputs, custom_ops={}, verbose=True):
     handler_collection = []
 
     def add_hooks(m):
@@ -72,15 +72,14 @@ def profile(model, input_size, custom_ops={}, device="cpu", verbose=True):
             handler = m.register_forward_hook(fn)
             handler_collection.append(handler)
 
-    original_device = model.parameters().__next__().device
+    # original_device = model.parameters().__next__().device
     training = model.training
 
-    model.eval().to(device)
+    model.eval()
     model.apply(add_hooks)
 
-    x = torch.zeros(input_size).to(device)
     with torch.no_grad():
-        model(x)
+        model(*inputs)
 
     total_ops = 0
     total_params = 0
@@ -94,7 +93,7 @@ def profile(model, input_size, custom_ops={}, device="cpu", verbose=True):
     total_params = total_params.item()
 
     # reset model to original status
-    model.train(training).to(original_device)
+    model.train(training)
     for handler in handler_collection:
         handler.remove()
 

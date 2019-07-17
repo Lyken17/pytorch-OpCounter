@@ -20,12 +20,12 @@ register_hooks = {
     nn.ReLU6: count_relu,
     nn.LeakyReLU: count_relu,
 
-    nn.MaxPool1d: count_maxpool,
-    nn.MaxPool2d: count_maxpool,
-    nn.MaxPool3d: count_maxpool,
-    nn.AdaptiveMaxPool1d: count_adap_maxpool,
-    nn.AdaptiveMaxPool2d: count_adap_maxpool,
-    nn.AdaptiveMaxPool3d: count_adap_maxpool,
+    # nn.MaxPool1d: count_maxpool,
+    # nn.MaxPool2d: count_maxpool,
+    # nn.MaxPool3d: count_maxpool,
+    # nn.AdaptiveMaxPool1d: count_adap_maxpool,
+    # nn.AdaptiveMaxPool2d: count_adap_maxpool,
+    # nn.AdaptiveMaxPool3d: count_adap_maxpool,
 
     nn.AvgPool1d: count_avgpool,
     nn.AvgPool2d: count_avgpool,

@@ -33,6 +33,11 @@
     ```
     
 ## Results on Recent Models
+
+<table>
+<tr>
+<td>
+
 Model | Params(M) | FLOPs(G)
 ---|---|---
 alexnet | 58.27 | 0.77
@@ -45,6 +50,12 @@ resnet152 | 57.40 | 10.82
 resnet18 | 11.15 | 1.70
 resnet34 | 20.79 | 3.43
 resnet50 | 24.37 | 3.86
+
+</td>
+<td>
+
+Model | Params(M) | FLOPs(G)
+---|---|---
 squeezenet1_0 | 1.19 | 1.01
 squeezenet1_1 | 1.18 | 0.48
 vgg11 | 126.71 | 7.98
@@ -55,3 +66,6 @@ vgg16 | 131.95 | 16.12
 vgg16_bn | 131.96 | 16.17
 vgg19 | 137.01 | 20.43
 vgg19_bn | 137.02 | 20.49
+
+</td>
+</tr>

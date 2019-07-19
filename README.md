@@ -34,7 +34,7 @@
     
 ## Results on Recent Models
 
-<div style="align:center">
+<p align="center">
 <table>
 <tr>
 <td>
@@ -70,4 +70,4 @@ vgg19_bn | 137.02 | 20.49
 
 </td>
 </tr>
-</div>
+</p>

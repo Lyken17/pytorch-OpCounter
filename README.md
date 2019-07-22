@@ -20,7 +20,6 @@
     ```    
 
 * Define the rule for 3rd party module.
-    
     ```python
     class YourModule(nn.Module):
         # your definition
@@ -31,6 +30,14 @@
     flops, params = profile(model, inputs=(input, ), 
                             custom_ops={YourModule: count_your_model})
     ```
+    
+* Improve the output readability
+
+    Call `thop.clever_format` to give a better format of the output.
+    ```python
+    from thop import clever_format
+    flops, params = clever_format([flops, params], "%.3e")
+    ```    
     
 ## Results on Recent Models
 

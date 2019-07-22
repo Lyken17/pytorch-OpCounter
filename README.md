@@ -1,4 +1,4 @@
-       # THOP: PyTorch-OpCounter
+# THOP: PyTorch-OpCounter
 
 ## How to install 
 * Through PyPi

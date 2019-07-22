@@ -6,6 +6,9 @@ from torch.nn.modules.conv import _ConvNd
 
 from .count_hooks import *
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 register_hooks = {
     nn.Conv1d: count_convNd,
     nn.Conv2d: count_convNd,
@@ -47,7 +50,7 @@ def profile(model, inputs, custom_ops={}, verbose=True):
             return
 
         if hasattr(m, "total_ops") or hasattr(m, "total_params"):
-            raise Warning("Either .total_ops or .total_params is already defined in %s.\n"
+            logger.warning("Either .total_ops or .total_params is already defined in %s." 
                           "Be careful, it might change your code's behavior." % str(m))
 
         m.register_buffer('total_ops', torch.zeros(1))

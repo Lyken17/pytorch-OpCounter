@@ -23,13 +23,6 @@ register_hooks = {
     nn.ReLU6: count_relu,
     nn.LeakyReLU: count_relu,
 
-    # nn.MaxPool1d: count_maxpool,
-    # nn.MaxPool2d: count_maxpool,
-    # nn.MaxPool3d: count_maxpool,
-    # nn.AdaptiveMaxPool1d: count_adap_maxpool,
-    # nn.AdaptiveMaxPool2d: count_adap_maxpool,
-    # nn.AdaptiveMaxPool3d: count_adap_maxpool,
-
     nn.AvgPool1d: count_avgpool,
     nn.AvgPool2d: count_avgpool,
     nn.AvgPool3d: count_avgpool,
@@ -42,8 +35,10 @@ register_hooks = {
 }
 
 
-def profile(model, inputs, custom_ops={}, verbose=True):
+def profile(model, inputs, custom_ops=None, verbose=True):
     handler_collection = []
+    if custom_ops is None:
+        custom_ops = {}
 
     def add_hooks(m):
         if len(list(m.children())) > 0:
@@ -51,7 +46,7 @@ def profile(model, inputs, custom_ops={}, verbose=True):
 
         if hasattr(m, "total_ops") or hasattr(m, "total_params"):
             logger.warning("Either .total_ops or .total_params is already defined in %s." 
-                          "Be careful, it might change your code's behavior." % str(m))
+                           "Be careful, it might change your code's behavior." % str(m))
 
         m.register_buffer('total_ops', torch.zeros(1))
         m.register_buffer('total_params', torch.zeros(1))

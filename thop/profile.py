@@ -30,10 +30,13 @@ register_hooks = {
     nn.AdaptiveMaxPool2d: zero_ops,
     nn.AdaptiveMaxPool3d: zero_ops,
 
-
+    nn.AvgPool1d: count_avgpool,
+    nn.AvgPool2d: count_avgpool,
+    nn.AvgPool3d: count_avgpool,
     nn.AdaptiveAvgPool1d: count_adap_avgpool,
     nn.AdaptiveAvgPool2d: count_adap_avgpool,
     nn.AdaptiveAvgPool3d: count_adap_avgpool,
+
     nn.Linear: count_linear,
     nn.Dropout: zero_ops,
 }

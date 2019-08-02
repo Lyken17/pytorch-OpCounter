@@ -30,9 +30,6 @@ register_hooks = {
     nn.AdaptiveMaxPool2d: zero_ops,
     nn.AdaptiveMaxPool3d: zero_ops,
 
-    nn.AvgPool1d: count_avgpool,
-    nn.AvgPool2d: count_avgpool,
-    nn.AvgPool3d: count_avgpool,
 
     nn.AdaptiveAvgPool1d: count_adap_avgpool,
     nn.AdaptiveAvgPool2d: count_adap_avgpool,
@@ -42,8 +39,10 @@ register_hooks = {
 }
 
 
-def profile(model: nn.Module, inputs, custom_ops={}, verbose=True):
+def profile(model, inputs, custom_ops=None, verbose=True):
     handler_collection = []
+    if custom_ops is None:
+        custom_ops = {}
 
     def add_hooks(m):
         if len(list(m.children())) > 0:

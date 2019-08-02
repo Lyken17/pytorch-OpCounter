@@ -75,7 +75,6 @@ def profile(model: nn.Module, inputs, custom_ops={}, verbose=True):
             handler = m.register_forward_hook(fn)
             handler_collection.append(handler)
 
-    # original_device = model.parameters().__next__().device
     training = model.training
 
     model.eval()

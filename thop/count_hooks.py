@@ -6,6 +6,9 @@ import torch.nn as nn
 multiply_adds = 1
 
 
+def zero_ops(m, x, y):
+    m.total_ops = torch.Tensor([int(0)])
+
 def count_convNd(m, x, y):
     x = x[0]
     cin = m.in_channels

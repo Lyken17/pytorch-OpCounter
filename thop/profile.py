@@ -23,12 +23,12 @@ register_hooks = {
     nn.ReLU6: count_relu,
     nn.LeakyReLU: count_relu,
 
-    # nn.MaxPool1d: count_maxpool,
-    # nn.MaxPool2d: count_maxpool,
-    # nn.MaxPool3d: count_maxpool,
-    # nn.AdaptiveMaxPool1d: count_adap_maxpool,
-    # nn.AdaptiveMaxPool2d: count_adap_maxpool,
-    # nn.AdaptiveMaxPool3d: count_adap_maxpool,
+    nn.MaxPool1d: zero_ops,
+    nn.MaxPool2d: zero_ops,
+    nn.MaxPool3d: zero_ops,
+    nn.AdaptiveMaxPool1d: zero_ops,
+    nn.AdaptiveMaxPool2d: zero_ops,
+    nn.AdaptiveMaxPool3d: zero_ops,
 
     nn.AvgPool1d: count_avgpool,
     nn.AvgPool2d: count_avgpool,
@@ -38,11 +38,11 @@ register_hooks = {
     nn.AdaptiveAvgPool2d: count_adap_avgpool,
     nn.AdaptiveAvgPool3d: count_adap_avgpool,
     nn.Linear: count_linear,
-    nn.Dropout: None,
+    nn.Dropout: zero_ops,
 }
 
 
-def profile(model, inputs, custom_ops={}, verbose=True):
+def profile(model: nn.Module, inputs, custom_ops={}, verbose=True):
     handler_collection = []
 
     def add_hooks(m):
@@ -50,8 +50,8 @@ def profile(model, inputs, custom_ops={}, verbose=True):
             return
 
         if hasattr(m, "total_ops") or hasattr(m, "total_params"):
-            logger.warning("Either .total_ops or .total_params is already defined in %s." 
-                          "Be careful, it might change your code's behavior." % str(m))
+            logger.warning("Either .total_ops or .total_params is already defined in %s."
+                           "Be careful, it might change your code's behavior." % str(m))
 
         m.register_buffer('total_ops', torch.zeros(1))
         m.register_buffer('total_params', torch.zeros(1))
@@ -99,5 +99,14 @@ def profile(model, inputs, custom_ops={}, verbose=True):
     model.train(training)
     for handler in handler_collection:
         handler.remove()
+
+    # remove temporal buffers
+    for n, m in model.named_modules():
+        if len(list(m.children())) > 0:
+            continue
+        if "total_ops" in m._buffers:
+            m._buffers.pop("total_ops")
+        if "total_params" in m._buffers:
+            m._buffers.pop("total_params")
 
     return total_ops, total_params

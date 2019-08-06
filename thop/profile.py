@@ -13,7 +13,7 @@ register_hooks = {
     nn.Conv1d: count_convNd,
     nn.Conv2d: count_convNd,
     nn.Conv3d: count_convNd,
-    nn.ConvTranspose2d: count_convtranspose2d,
+    # nn.ConvTranspose2d: count_convtranspose2d,
 
     nn.BatchNorm1d: count_bn,
     nn.BatchNorm2d: count_bn,

@@ -1,7 +1,11 @@
 import argparse
+import logging
 
 import torch
 import torch.nn as nn
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 multiply_adds = 1
 
@@ -84,6 +88,34 @@ def count_adap_avgpool(m, x, y):
     kernel_ops = total_add + total_div
     num_elements = y.numel()
     total_ops = kernel_ops * num_elements
+
+    m.total_ops += torch.Tensor([int(total_ops)])
+
+# TODO: verify the accuracy
+def count_upsample(m, x, y):
+    if m.mode not in ("nearest", "linear", "bilinear", "bicubic", ): #"trilinear"
+        logger.warning("mode %s is not implemented yet, take it a zero op" % m.mode)
+        return zero_ops(m, x, y)
+
+    if m.mode == "nearest":
+        return zero_ops(m, x, y)
+
+    x = x[0]
+    if m.mode == "linear":
+        total_ops = y.nelement() * 5 # 2 muls + 3 add
+    elif m.mode == "bilinear":
+        # https://en.wikipedia.org/wiki/Bilinear_interpolation
+        total_ops = y.nelement() * 13 # 6 muls + 7 adds
+    elif m.mode == "bicubic":
+        # https://en.wikipedia.org/wiki/Bicubic_interpolation
+        # Product matrix [4x4] x [4x4] x [4x4]
+        ops_solve_A = 224 # 128 muls + 96 adds
+        ops_solve_p = 35 # 16 muls + 12 adds + 4 muls + 3 adds
+        total_ops = y.nelement() * (ops_solve_A + ops_solve_p)
+    elif m.mode == "trilinear":
+        # https://en.wikipedia.org/wiki/Trilinear_interpolation
+        # can viewed as 2 bilinear + 1 linear
+        total_ops = y.nelement() * (13 * 2 + 5)
 
     m.total_ops += torch.Tensor([int(total_ops)])
 

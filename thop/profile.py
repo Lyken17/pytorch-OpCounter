@@ -41,6 +41,10 @@ register_hooks = {
 
     nn.Linear: count_linear,
     nn.Dropout: zero_ops,
+
+    nn.Upsample: count_upsample,
+    nn.UpsamplingBilinear2d: count_upsample,
+    nn.UpsamplingNearest2d: count_upsample
 }
 
 

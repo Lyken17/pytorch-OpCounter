@@ -50,9 +50,8 @@ def count_relu(m, x, y):
     x = x[0]
 
     nelements = x.numel()
-    total_ops = nelements
 
-    m.total_ops = torch.Tensor([int(total_ops)])
+    m.total_ops = torch.Tensor([int(nelements)])
 
 
 def count_softmax(m, x, y):

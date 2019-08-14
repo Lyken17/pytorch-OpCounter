@@ -21,7 +21,7 @@ def count_convNd(m, x, y):
     bias_ops = 1 if m.bias is not None else 0
 
     # N x Cout x H x W x  (Cin x Kw x Kh + bias)
-    total_ops = y.nelement() * (m.in_channels // m.groups * kernel_ops + bias_ops)
+    total_ops = y.nelement() * (m.in_channels // m.groups * kernel_ops * 2 + bias_ops)
 
     m.total_ops += torch.Tensor([int(total_ops)])
 
@@ -32,7 +32,7 @@ def count_convNd_ver2(m, x, y):
     # N x H x W (exclude Cout)
     output_size = (y.size()[:1] + y.size()[2:]).numel()
     # Cout x Cin x Kw x Kh
-    kernel_ops = m.weight.nelement()
+    kernel_ops = m.weight.nelement() * 2
     if m.bias is not None:
         # Cout x 1
         kernel_ops += + m.bias.nelement()

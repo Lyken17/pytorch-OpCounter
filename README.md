@@ -46,7 +46,7 @@
 <tr>
 <td>
 
-Model | Params(M) | FLOPs(G)
+Model | Params(M) | MACs(G)
 ---|---|---
 alexnet | 58.27 | 0.72
 densenet121 | 7.61 | 2.70
@@ -62,7 +62,7 @@ resnet152 | 57.40 | 10.81
 </td>
 <td>
 
-Model | Params(M) | FLOPs(G)
+Model | Params(M) | MACs(G)
 ---|---|---
 squeezenet1_0 | 1.19 | 0.77
 squeezenet1_1 | 1.18 | 0.33

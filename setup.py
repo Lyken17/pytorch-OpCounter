@@ -8,7 +8,7 @@ from setuptools.command.install import install
 
 readme = open('README.md').read()
 
-VERSION = '0.0.30'
+VERSION = '0.0.31'
 
 requirements = [
     'torch',

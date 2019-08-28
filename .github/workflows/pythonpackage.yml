@@ -26,5 +26,5 @@ jobs:
         TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
       run: |
-        pip install twine
+        pip install twine setuptools --upgrade
         bash build.sh

@@ -1,4 +1,4 @@
-name: Python package
+name: Publish
 
 on: [push]
 
@@ -22,5 +22,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Push to PyPi
+      env:
+        TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
       run: |
+        pip install twine
         bash build.sh

@@ -27,4 +27,6 @@ jobs:
         TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
       run: |
         pip install twine setuptools --upgrade
-        bash build.sh
+        python setup.py bdist_wheel
+        twine check dist/*
+        twine upload dist/*

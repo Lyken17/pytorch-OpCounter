@@ -28,6 +28,11 @@ jobs:
         TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
       run: |
-        python setup.py bdist_wheel
-        twine check dist/*
-        twine upload dist/*
+        if pip search thop | grep -o "\((.*)\)" | xargs python .github/workflows/date_extraction.py -m ; then
+          echo "There has been more than one week since last update, start to build."
+          python setup.py bdist_wheel
+          twine check dist/*
+          twine upload dist/*
+        else
+          echo "Latest update within one week, skip to build"
+        fi

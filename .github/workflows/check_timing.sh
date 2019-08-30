@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 if pip search thop | grep -o "\((.*)\)" | xargs python .github/workflows/date_extraction.py -m ; then
-    echo "Command succeeded"
+    echo "There has been more than one week since last update, start to build."
 else
-    echo "Command failed"
+   echo "Latest update within one week, skip the build"
 fi

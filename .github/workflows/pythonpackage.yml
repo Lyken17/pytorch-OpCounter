@@ -34,5 +34,5 @@ jobs:
           twine check dist/*
           twine upload dist/*
         else
-          echo "Latest update within one week, skip to build"
+          echo "Latest update within one week, skip the build"
         fi

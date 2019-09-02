@@ -1,5 +1,6 @@
-
+import torch
 from torchvision import models
+from thop.profile import profile
 
 model_names = sorted(name for name in models.__dict__ if
                      name.islower() and not name.startswith("__") and not "inception" in name
@@ -8,12 +9,10 @@ model_names = sorted(name for name in models.__dict__ if
 print("%s | %s | %s" % ("Model", "Params(M)", "FLOPs(G)"))
 print("---|---|---")
 
-from thop.profile import profile
-import torch
-
 device = "cpu"
 if torch.cuda.is_available():
     device = "cuda"
+    
 for name in model_names:
     model = models.__dict__[name]().to(device)
     inputs = torch.randn((1, 3, 224, 224)).to(device)

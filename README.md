@@ -49,46 +49,45 @@ The implementation are adapted from `torchvision`. Following results can be obta
 
 Model | Params(M) | MACs(G)
 ---|---|---
-alexnet | 58.27 | 0.72
-vgg11 | 126.71 | 7.21
-vgg11_bn | 126.71 | 7.24
-vgg13 | 126.88 | 10.66
-vgg13_bn | 126.89 | 10.70
-vgg16 | 131.95 | 14.54
-vgg16_bn | 131.96 | 14.59
-vgg19 | 137.01 | 18.41
-vgg19_bn | 137.02 | 18.47
-resnet18 | 11.15 | 1.70
-resnet34 | 20.79 | 3.43
-resnet50 | 24.37 | 3.85
-resnet101 | 42.49 | 7.33
-resnet152 | 57.40 | 10.81
-wide_resnet101_2 | 121.01 | 21.27
-wide_resnet50_2 | 65.69 | 10.67
-
+alexnet | 61.10 | 0.77
+vgg11 | 132.86 | 7.74
+vgg11_bn | 132.87 | 7.77
+vgg13 | 133.05 | 11.44
+vgg13_bn | 133.05 | 11.49
+vgg16 | 138.36 | 15.61
+vgg16_bn | 138.37 | 15.66
+vgg19 | 143.67 | 19.77
+vgg19_bn | 143.68 | 19.83
+resnet18 | 11.69 | 1.82
+resnet34 | 21.80 | 3.68
+resnet50 | 25.56 | 4.14
+resnet101 | 44.55 | 7.87
+resnet152 | 60.19 | 11.61
+wide_resnet101_2 | 126.89 | 22.84
+wide_resnet50_2 | 68.88 | 11.46
 
 </td>
 <td>
 
 Model | Params(M) | MACs(G)
 ---|---|---
-resnext101_32x8d | 84.68 | 15.41
-resnext50_32x4d | 23.87 | 4.00
-densenet121 | 7.61 | 2.70
-densenet161 | 27.35 | 7.31
-densenet169 | 13.49 | 3.20
-densenet201 | 19.09 | 4.09
-squeezenet1_0 | 1.19 | 0.77
-squeezenet1_1 | 1.18 | 0.33
-mnasnet0_5 | 2.12 | 0.13
-mnasnet0_75 | 3.02 | 0.23
-mnasnet1_0 | 4.18 | 0.31
-mnasnet1_3 | 5.99 | 0.49
-mobilenet_v2 | 3.34 | 0.31
-shufflenet_v2_x0_5 | 1.30 | 0.04
-shufflenet_v2_x1_0 | 2.17 | 0.14
-shufflenet_v2_x1_5 | 3.34 | 0.29
-shufflenet_v2_x2_0 | 7.05 | 0.56
+resnext50_32x4d | 25.03 | 4.29
+resnext101_32x8d | 88.79 | 16.54
+densenet121 | 7.98 | 2.90
+densenet161 | 28.68 | 7.85
+densenet169 | 14.15 | 3.44
+densenet201 | 20.01 | 4.39
+squeezenet1_0 | 1.25 | 0.82
+squeezenet1_1 | 1.24 | 0.35
+mnasnet0_5 | 2.22 | 0.14
+mnasnet0_75 | 3.17 | 0.24
+mnasnet1_0 | 4.38 | 0.34
+mnasnet1_3 | 6.28 | 0.53
+mobilenet_v2 | 3.50 | 0.33
+shufflenet_v2_x0_5 | 1.37 | 0.05
+shufflenet_v2_x1_0 | 2.28 | 0.15
+shufflenet_v2_x1_5 | 3.50 | 0.31
+shufflenet_v2_x2_0 | 7.39 | 0.60
 
 </td>
 </tr>

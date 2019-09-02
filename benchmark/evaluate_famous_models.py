@@ -17,4 +17,4 @@ for name in model_names:
     model = models.__dict__[name]().to(device)
     inputs = torch.randn((1, 3, 224, 224)).to(device)
     total_ops, total_params = profile(model, (inputs, ), verbose=False)
-    print("%s | %.2f | %.2f" % (name, total_params / (1024 ** 2), total_ops / (1024 ** 3)))
+    print("%s | %.2f | %.2f" % (name, total_params / (1000 ** 2), total_ops / (1000 ** 3)))

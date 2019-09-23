@@ -88,6 +88,7 @@ shufflenet_v2_x0_5 | 1.37 | 0.05
 shufflenet_v2_x1_0 | 2.28 | 0.15
 shufflenet_v2_x1_5 | 3.50 | 0.31
 shufflenet_v2_x2_0 | 7.39 | 0.60
+inception_v3 | 27.16 | 5.75
 
 </td>
 </tr>

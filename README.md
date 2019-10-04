@@ -93,3 +93,11 @@ inception_v3 | 27.16 | 5.75
 </td>
 </tr>
 </p>
+
+## Verification
+
+The operation counts can be verified experimentally by using CPU PMU
+counters: see [benchmark/verify_thop.py](benchmark/verify_thop.py)
+script. This requires the ``python-papi`` package. See [blog
+post](http://www.bnikolic.co.uk/blog/python/flops/2019/10/01/pytorch-count-flops.html)
+for explanation of operation and results.

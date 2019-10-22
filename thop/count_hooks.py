@@ -105,7 +105,7 @@ def count_upsample(m, x, y):
         total_ops = y.nelement() * 5 # 2 muls + 3 add
     elif m.mode == "bilinear":
         # https://en.wikipedia.org/wiki/Bilinear_interpolation
-        total_ops = y.nelement() * 13 # 6 muls + 7 adds
+        total_ops = y.nelement() * 11 # 6 muls + 5 adds
     elif m.mode == "bicubic":
         # https://en.wikipedia.org/wiki/Bicubic_interpolation
         # Product matrix [4x4] x [4x4] x [4x4]

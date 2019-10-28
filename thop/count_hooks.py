@@ -124,6 +124,7 @@ def count_linear(m, x, y):
     # per output element
     total_mul = m.in_features
     total_add = m.in_features - 1
+    total_add += 1 if m.bias is not None else 0
     num_elements = y.numel()
     total_ops = (total_mul + total_add) * num_elements
 

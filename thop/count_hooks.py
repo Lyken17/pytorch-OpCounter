@@ -3,6 +3,7 @@ import logging
 
 import torch
 import torch.nn as nn
+from torch.nn.modules.conv import _ConvNd
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -14,7 +15,7 @@ def zero_ops(m, x, y):
     m.total_ops += torch.Tensor([int(0)])
 
 
-def count_convNd(m, x, y):
+def count_convNd(m: _ConvNd, x: (torch.Tensor,), y: torch.Tensor):
     x = x[0]
 
     kernel_ops = m.weight.size()[2:].numel()  # Kw x Kh
@@ -26,7 +27,7 @@ def count_convNd(m, x, y):
     m.total_ops += torch.Tensor([int(total_ops)])
 
 
-def count_convNd_ver2(m, x, y):
+def count_convNd_ver2(m: _ConvNd, x: (torch.Tensor,), y: torch.Tensor):
     x = x[0]
 
     # N x H x W (exclude Cout)
@@ -91,9 +92,10 @@ def count_adap_avgpool(m, x, y):
 
     m.total_ops += torch.Tensor([int(total_ops)])
 
+
 # TODO: verify the accuracy
 def count_upsample(m, x, y):
-    if m.mode not in ("nearest", "linear", "bilinear", "bicubic", ): #"trilinear"
+    if m.mode not in ("nearest", "linear", "bilinear", "bicubic",):  # "trilinear"
         logger.warning("mode %s is not implemented yet, take it a zero op" % m.mode)
         return zero_ops(m, x, y)
 
@@ -102,15 +104,15 @@ def count_upsample(m, x, y):
 
     x = x[0]
     if m.mode == "linear":
-        total_ops = y.nelement() * 5 # 2 muls + 3 add
+        total_ops = y.nelement() * 5  # 2 muls + 3 add
     elif m.mode == "bilinear":
         # https://en.wikipedia.org/wiki/Bilinear_interpolation
-        total_ops = y.nelement() * 11 # 6 muls + 5 adds
+        total_ops = y.nelement() * 11  # 6 muls + 5 adds
     elif m.mode == "bicubic":
         # https://en.wikipedia.org/wiki/Bicubic_interpolation
         # Product matrix [4x4] x [4x4] x [4x4]
-        ops_solve_A = 224 # 128 muls + 96 adds
-        ops_solve_p = 35 # 16 muls + 12 adds + 4 muls + 3 adds
+        ops_solve_A = 224  # 128 muls + 96 adds
+        ops_solve_p = 35  # 16 muls + 12 adds + 4 muls + 3 adds
         total_ops = y.nelement() * (ops_solve_A + ops_solve_p)
     elif m.mode == "trilinear":
         # https://en.wikipedia.org/wiki/Trilinear_interpolation

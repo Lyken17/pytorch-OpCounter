@@ -64,7 +64,7 @@ def profile(model, inputs, custom_ops=None, verbose=True):
             return
 
         if hasattr(m, "total_ops") or hasattr(m, "total_params"):
-            logger.warning("Either .total_ops or .total_params is already defined in %s."
+            logger.warning("Either .total_ops or .total_params is already defined in %s. "
                            "Be careful, it might change your code's behavior." % str(m))
 
         m.register_buffer('total_ops', torch.zeros(1))
@@ -82,10 +82,10 @@ def profile(model, inputs, custom_ops=None, verbose=True):
 
         if fn is None:
             if verbose:
-                print("THOP has not implemented counting method for ", m)
+                logger.info("THOP has not implemented counting method for ", m)
         else:
             if verbose:
-                print("Register FLOP counter for module %s" % str(m))
+                logger.info("Register FLOP counter for module %s" % str(m))
             handler = m.register_forward_hook(fn)
             handler_collection.append(handler)
 

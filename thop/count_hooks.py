@@ -45,8 +45,9 @@ def count_bn(m, x, y):
     x = x[0]
 
     nelements = x.numel()
-    # subtract, divide, gamma, beta
-    total_ops = 4 * nelements
+    if not m.training:
+        # subtract, divide, gamma, beta
+        total_ops = 2 * nelements
 
     m.total_ops += torch.Tensor([int(total_ops)])
 
@@ -73,9 +74,10 @@ def count_softmax(m, x, y):
 
 
 def count_avgpool(m, x, y):
-    total_add = torch.prod(torch.Tensor([m.kernel_size]))
-    total_div = 1
-    kernel_ops = total_add + total_div
+    # total_add = torch.prod(torch.Tensor([m.kernel_size]))
+    # total_div = 1
+    # kernel_ops = total_add + total_div
+    kernel_ops = 1
     num_elements = y.numel()
     total_ops = kernel_ops * num_elements
 

@@ -3,11 +3,17 @@ import logging
 import torch
 import torch.nn as nn
 from torch.nn.modules.conv import _ConvNd
+import warnings
+
+from distutils.version import LooseVersion
 
 from .count_hooks import *
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+if LooseVersion(torch.__version__) < LooseVersion("1.0.0"):
+    logger.warning("You are using an old version PyTorch {version}, which THOP is not going to support in the future.".format(version=torch.__version__))
 
 register_hooks = {
     nn.Conv1d: count_convNd,

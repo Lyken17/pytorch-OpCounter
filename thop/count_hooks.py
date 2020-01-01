@@ -18,7 +18,7 @@ def zero_ops(m, x, y):
 def count_convNd(m: _ConvNd, x: (torch.Tensor,), y: torch.Tensor):
     x = x[0]
 
-    kernel_ops = m.weight.size()[2:].numel()  # Kw x Kh
+    kernel_ops = torch.zeros(m.weight.size()[2:]).numel()  # Kw x Kh
     bias_ops = 1 if m.bias is not None else 0
 
     # N x Cout x H x W x  (Cin x Kw x Kh + bias)
@@ -31,7 +31,7 @@ def count_convNd_ver2(m: _ConvNd, x: (torch.Tensor,), y: torch.Tensor):
     x = x[0]
 
     # N x H x W (exclude Cout)
-    output_size = (y.size()[:1] + y.size()[2:]).numel()
+    output_size = torch.zeros((y.size()[:1] + y.size()[2:])).numel()
     # Cout x Cin x Kw x Kh
     kernel_ops = m.weight.nelement()
     if m.bias is not None:

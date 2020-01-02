@@ -13,7 +13,9 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 if LooseVersion(torch.__version__) < LooseVersion("1.0.0"):
-    logger.warning("You are using an old version PyTorch {version}, which THOP is not going to support in the future.".format(version=torch.__version__))
+    logger.warning(
+        "You are using an old version PyTorch {version}, which THOP is not going to support in the future.".format(
+            version=torch.__version__))
 
 register_hooks = {
     nn.Conv1d: count_convNd,
@@ -121,5 +123,73 @@ def profile(model, inputs, custom_ops=None, verbose=True):
             m._buffers.pop("total_ops")
         if "total_params" in m._buffers:
             m._buffers.pop("total_params")
+
+    return total_ops, total_params
+
+
+def profile_2(model: nn.Module, inputs, custom_ops=None, verbose=True):
+    handler_collection = {}
+    if custom_ops is None:
+        custom_ops = {}
+
+    def add_hooks(m: nn.Module):
+        # if hasattr(m, "total_ops") or hasattr(m, "total_params"):
+        #     logger.warning("Either .total_ops or .total_params is already defined in %s. "
+        #                    "Be careful, it might change your code's behavior." % m._get_name())
+        m.register_buffer('total_ops', torch.zeros(1))
+        m.register_buffer('total_params', torch.zeros(1))
+
+        for p in m.parameters():
+            m.total_params += torch.Tensor([p.numel()])
+
+        m_type = type(m)
+        fn = None
+
+        # if defined both op maps, custom_ops takes higher priority.
+        if m_type in custom_ops:
+            fn = custom_ops[m_type]
+        elif m_type in register_hooks:
+            fn = register_hooks[m_type]
+
+        if fn is None:
+            if verbose:
+                logger.info("THOP has not implemented counting method for %s." % m._get_name())
+        else:
+            if verbose:
+                logger.info("Register FLOP counter for module %s." % m._get_name())
+            handler_collection[m] = m.register_forward_hook(fn)
+
+    training = model.training
+
+    model.eval()
+    model.apply(add_hooks)
+
+    with torch.no_grad():
+        model(*inputs)
+
+    def dfs_count(module: nn.Module, prefix="\t") -> (int, int):
+        total_ops, total_params = 0, 0
+        for m in module.children():
+            # if not hasattr(m, "total_ops") and not hasattr(m, "total_params"):  # and len(list(m.children())) > 0:
+            #     m_ops, m_params = dfs_count(m, prefix=prefix + "\t")
+            # else:
+            #     m_ops, m_params = m.total_ops, m.total_params
+            if m in handler_collection:
+                m_ops, m_params = m.total_ops, m.total_params
+            else:
+                m_ops, m_params = dfs_count(m, prefix=prefix + "\t")
+            total_ops += m_ops
+            total_params += m_params
+        #  print(prefix, module._get_name(), (total_ops.item(), total_params.item()))
+        return total_ops, total_params
+
+    total_ops, total_params = (_.item() for _ in dfs_count(model))
+
+    # reset model to original status
+    model.train(training)
+    for m, handler in handler_collection.items():
+        handler.remove()
+        m._buffers.pop("total_ops")
+        m._buffers.pop("total_params")
 
     return total_ops, total_params

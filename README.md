@@ -15,7 +15,7 @@ OR
     from thop import profile
     model = resnet50()
     input = torch.randn(1, 3, 224, 224)
-    flops, params = profile(model, inputs=(input, ))
+    macs, params = profile(model, inputs=(input, ))
     ```    
 
 * Define the rule for 3rd party module.
@@ -26,7 +26,7 @@ OR
         # your rule here
     
     input = torch.randn(1, 3, 224, 224)
-    flops, params = profile(model, inputs=(input, ), 
+    macs, params = profile(model, inputs=(input, ), 
                             custom_ops={YourModule: count_your_model})
     ```
     
@@ -35,7 +35,7 @@ OR
     Call `thop.clever_format` to give a better format of the output.
     ```python
     from thop import clever_format
-    flops, params = clever_format([flops, params], "%.3f")
+    macs, params = clever_format([flops, params], "%.3f")
     ```    
     
 ## Results of Recent Models

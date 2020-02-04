@@ -56,7 +56,7 @@ register_hooks = {
 }
 
 
-def profile(model, inputs, custom_ops=None, verbose=True):
+def profile(model, inputs, custom_ops=None, verbose=True, count_inherited=False):
     handler_collection = []
     if custom_ops is None:
         custom_ops = {}
@@ -77,10 +77,20 @@ def profile(model, inputs, custom_ops=None, verbose=True):
 
         m_type = type(m)
         fn = None
-        if m_type in custom_ops:  # if defined both op maps, use custom_ops to overwrite.
-            fn = custom_ops[m_type]
-        elif m_type in register_hooks:
-            fn = register_hooks[m_type]
+        if count_inherited:
+            for op_type, op_fn in register_hooks.items():
+                if isinstance(m, op_type):
+                    fn = op_fn
+                    break
+            for op_type, op_fn in custom_ops.items():
+                if isinstance(m, op_type):
+                    fn = op_fn
+                    break
+        else:
+            if m_type in custom_ops:  # if defined both op maps, use custom_ops to overwrite.
+                fn = custom_ops[m_type]
+            elif m_type in register_hooks:
+                fn = register_hooks[m_type]
 
         if fn is None:
             if verbose:
@@ -127,7 +137,7 @@ def profile(model, inputs, custom_ops=None, verbose=True):
     return total_ops, total_params
 
 
-def profile_2(model: nn.Module, inputs, custom_ops=None, verbose=True):
+def profile_2(model: nn.Module, inputs, custom_ops=None, verbose=True, count_inherited=False):
     handler_collection = {}
     if custom_ops is None:
         custom_ops = {}
@@ -146,10 +156,20 @@ def profile_2(model: nn.Module, inputs, custom_ops=None, verbose=True):
         fn = None
 
         # if defined both op maps, custom_ops takes higher priority.
-        if m_type in custom_ops:
-            fn = custom_ops[m_type]
-        elif m_type in register_hooks:
-            fn = register_hooks[m_type]
+        if count_inherited:
+            for op_type, op_fn in register_hooks.items():
+                if isinstance(m, op_type):
+                    fn = op_fn
+                    break
+            for op_type, op_fn in custom_ops.items():
+                if isinstance(m, op_type):
+                    fn = op_fn
+                    break
+        else:
+            if m_type in custom_ops:
+                fn = custom_ops[m_type]
+            elif m_type in register_hooks:
+                fn = register_hooks[m_type]
 
         if fn is None:
             if verbose:

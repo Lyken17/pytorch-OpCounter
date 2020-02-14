@@ -62,8 +62,10 @@ def profile(model, inputs, custom_ops=None, verbose=True):
         custom_ops = {}
 
     def add_hooks(m):
-        if len(list(m.children())) > 0:
-            return
+        m_type = type(m)
+        if len(list(m.children())) > 0 and m_type not in custom_ops:
+            for c in m.children():
+                add_hooks(c)
 
         if hasattr(m, "total_ops") or hasattr(m, "total_params"):
             logger.warning("Either .total_ops or .total_params is already defined in %s. "
@@ -75,7 +77,6 @@ def profile(model, inputs, custom_ops=None, verbose=True):
         for p in m.parameters():
             m.total_params += torch.Tensor([p.numel()])
 
-        m_type = type(m)
         fn = None
         if m_type in custom_ops:  # if defined both op maps, use custom_ops to overwrite.
             fn = custom_ops[m_type]
@@ -94,7 +95,7 @@ def profile(model, inputs, custom_ops=None, verbose=True):
     training = model.training
 
     model.eval()
-    model.apply(add_hooks)
+    add_hooks(model)
 
     with torch.no_grad():
         model(*inputs)
@@ -102,7 +103,7 @@ def profile(model, inputs, custom_ops=None, verbose=True):
     total_ops = 0
     total_params = 0
     for m in model.modules():
-        if len(list(m.children())) > 0:  # skip for non-leaf module
+        if not hasattr(m, 'total_ops') and not hasattr(m, 'total_params'):
             continue
         total_ops += m.total_ops
         total_params += m.total_params

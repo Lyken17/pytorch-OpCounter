@@ -158,7 +158,7 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True):
                 print("[INFO] Register %s() for %s." % (fn.__qualname__, m_type))
         else:
             if m_type not in types_collection and verbose:
-                print("[WARN] Cannot find rule for %s. Treat it as zero Macs and zero Params." % m_type)
+                prRed("[WARN] Cannot find rule for %s. Treat it as zero Macs and zero Params." % m_type)
 
         if fn is not None:
             handler_collection[m] = m.register_forward_hook(fn)

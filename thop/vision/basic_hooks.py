@@ -5,9 +5,6 @@ import torch
 import torch.nn as nn
 from torch.nn.modules.conv import _ConvNd
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
 multiply_adds = 1
 
 
@@ -24,7 +21,7 @@ def count_convNd(m: _ConvNd, x: (torch.Tensor,), y: torch.Tensor):
     # N x Cout x H x W x  (Cin x Kw x Kh + bias)
     total_ops = y.nelement() * (m.in_channels // m.groups * kernel_ops + bias_ops)
 
-    m.total_ops += torch.DoubleTensor([int(total_ops)], dtype=torch.float64)
+    m.total_ops += torch.DoubleTensor([int(total_ops)])
 
 
 def count_convNd_ver2(m: _ConvNd, x: (torch.Tensor,), y: torch.Tensor):
@@ -38,7 +35,7 @@ def count_convNd_ver2(m: _ConvNd, x: (torch.Tensor,), y: torch.Tensor):
         # Cout x 1
         kernel_ops += + m.bias.nelement()
     # x N x H x W x Cout x (Cin x Kw x Kh + bias)
-    m.total_ops += torch.DoubleTensor([int(output_size * kernel_ops)], dtype=torch.float64)
+    m.total_ops += torch.DoubleTensor([int(output_size * kernel_ops)])
 
 
 def count_bn(m, x, y):
@@ -98,7 +95,7 @@ def count_adap_avgpool(m, x, y):
 # TODO: verify the accuracy
 def count_upsample(m, x, y):
     if m.mode not in ("nearest", "linear", "bilinear", "bicubic",):  # "trilinear"
-        logger.warning("mode %s is not implemented yet, take it a zero op" % m.mode)
+        logging.warning("mode %s is not implemented yet, take it a zero op" % m.mode)
         return zero_ops(m, x, y)
 
     if m.mode == "nearest":

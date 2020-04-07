@@ -2,18 +2,21 @@ from distutils.version import LooseVersion
 
 from thop.vision.basic_hooks import *
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.INFO)
+def prRed(skk): print("\033[91m{}\033[00m" .format(skk))
+def prGreen(skk): print("\033[92m{}\033[00m" .format(skk))
+def prYellow(skk): print("\033[93m{}\033[00m" .format(skk))
 
 if LooseVersion(torch.__version__) < LooseVersion("1.0.0"):
-    logger.warning(
+    logging.warning(
         "You are using an old version PyTorch {version}, which THOP is not going to support in the future.".format(
             version=torch.__version__))
 
 default_dtype = torch.float64
 
 register_hooks = {
-    nn.ZeroPad2d: zero_ops, # padding does not involve any multiplication.
+    nn.ZeroPad2d: zero_ops,  # padding does not involve any multiplication.
 
     nn.Conv1d: count_convNd,
     nn.Conv2d: count_convNd,
@@ -53,8 +56,9 @@ register_hooks = {
 }
 
 
-def profile(model, inputs, custom_ops=None, verbose=True):
+def profile_origin(model, inputs, custom_ops=None, verbose=True):
     handler_collection = []
+    types_collection = set()
     if custom_ops is None:
         custom_ops = {}
 
@@ -63,8 +67,8 @@ def profile(model, inputs, custom_ops=None, verbose=True):
             return
 
         if hasattr(m, "total_ops") or hasattr(m, "total_params"):
-            logger.warning("Either .total_ops or .total_params is already defined in %s. "
-                           "Be careful, it might change your code's behavior." % str(m))
+            logging.warning("Either .total_ops or .total_params is already defined in %s. "
+                            "Be careful, it might change your code's behavior." % str(m))
 
         m.register_buffer('total_ops', torch.zeros(1, dtype=default_dtype))
         m.register_buffer('total_params', torch.zeros(1, dtype=default_dtype))
@@ -73,24 +77,24 @@ def profile(model, inputs, custom_ops=None, verbose=True):
             m.total_params += torch.DoubleTensor([p.numel()])
 
         m_type = type(m)
+
         fn = None
         if m_type in custom_ops:  # if defined both op maps, use custom_ops to overwrite.
-            print("[Customized] %s" % m._get_name())
             fn = custom_ops[m_type]
+            if m_type not in types_collection and verbose:
+                print("[INFO] Customize rule %s() %s." % (fn.__qualname__, m_type))
         elif m_type in register_hooks:
-            print("[THOP Defined] %s" % m._get_name())
             fn = register_hooks[m_type]
+            if m_type not in types_collection and verbose:
+                print("[INFO] Register %s() for %s." % (fn.__qualname__, m_type))
         else:
-            print("[Not found] %s" % m._get_name())
+            if m_type not in types_collection and verbose:
+                prRed("[WARN] Cannot find rule for %s. Treat it as zero Macs and zero Params." % m_type)
 
-        if fn is None:
-            if verbose:
-                logger.info("THOP has not implemented counting method for ", m)
-        else:
-            if verbose:
-                logger.info("Register FLOP counter for module %s" % str(m))
+        if fn is not None:
             handler = m.register_forward_hook(fn)
             handler_collection.append(handler)
+        types_collection.add(m_type)
 
     training = model.training
 
@@ -128,41 +132,37 @@ def profile(model, inputs, custom_ops=None, verbose=True):
     return total_ops, total_params
 
 
-def profile_2(model: nn.Module, inputs, custom_ops=None, verbose=True):
+def profile(model: nn.Module, inputs, custom_ops=None, verbose=True):
     handler_collection = {}
+    types_collection = set()
     if custom_ops is None:
         custom_ops = {}
 
     def add_hooks(m: nn.Module):
-        # if hasattr(m, "total_ops") or hasattr(m, "total_params"):
-        #     logger.warning("Either .total_ops or .total_params is already defined in %s. "
-        #                    "Be careful, it might change your code's behavior." % m._get_name())
-        m.register_buffer('total_ops', torch.zeros(1))
-        m.register_buffer('total_params', torch.zeros(1))
+        m.register_buffer('total_ops', torch.zeros(1, dtype=torch.float64))
+        m.register_buffer('total_params', torch.zeros(1, dtype=torch.float64))
 
         for p in m.parameters():
-            m.total_params += torch.Tensor([p.numel()])
+            m.total_params += torch.DoubleTensor([p.numel()])
 
         m_type = type(m)
+
         fn = None
-
-        # if defined both op maps, custom_ops takes higher priority.
         if m_type in custom_ops:  # if defined both op maps, use custom_ops to overwrite.
-            print("[Customized] %s" % m._get_name())
             fn = custom_ops[m_type]
+            if m_type not in types_collection and verbose:
+                print("[INFO] Customize rule %s() %s." % (fn.__qualname__, m_type))
         elif m_type in register_hooks:
-            print("[THOP Defined] %s" % m._get_name())
             fn = register_hooks[m_type]
+            if m_type not in types_collection and verbose:
+                print("[INFO] Register %s() for %s." % (fn.__qualname__, m_type))
         else:
-            print("[Not found] %s" % m._get_name())
+            if m_type not in types_collection and verbose:
+                print("[WARN] Cannot find rule for %s. Treat it as zero Macs and zero Params." % m_type)
 
-        # if verbose:
-        #     if fn is None:
-        #         print("THOP has not implemented counting method for %s." % m._get_name())
-        #     else:
-        #        print("Register FLOP counter for module %s." % m._get_name())
         if fn is not None:
             handler_collection[m] = m.register_forward_hook(fn)
+        types_collection.add(m_type)
 
     training = model.training
 
@@ -180,7 +180,7 @@ def profile_2(model: nn.Module, inputs, custom_ops=None, verbose=True):
             # else:
             #     m_ops, m_params = m.total_ops, m.total_params
             if m in handler_collection and not isinstance(m, (nn.Sequential, nn.ModuleList)):
-                m_ops, m_params = m.total_ops, m.total_params
+                m_ops, m_params = m.total_ops.item(), m.total_params.item()
             else:
                 m_ops, m_params = dfs_count(m, prefix=prefix + "\t")
             total_ops += m_ops

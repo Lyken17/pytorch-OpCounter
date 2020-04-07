@@ -1,13 +1,6 @@
-import logging
-
-import torch
-import torch.nn as nn
-from torch.nn.modules.conv import _ConvNd
-import warnings
-
 from distutils.version import LooseVersion
 
-from .count_hooks import *
+from thop.vision.basic_hooks import *
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -17,7 +10,11 @@ if LooseVersion(torch.__version__) < LooseVersion("1.0.0"):
         "You are using an old version PyTorch {version}, which THOP is not going to support in the future.".format(
             version=torch.__version__))
 
+default_dtype = torch.float64
+
 register_hooks = {
+    nn.ZeroPad2d: zero_ops, # padding does not involve any multiplication.
+
     nn.Conv1d: count_convNd,
     nn.Conv2d: count_convNd,
     nn.Conv3d: count_convNd,
@@ -69,18 +66,22 @@ def profile(model, inputs, custom_ops=None, verbose=True):
             logger.warning("Either .total_ops or .total_params is already defined in %s. "
                            "Be careful, it might change your code's behavior." % str(m))
 
-        m.register_buffer('total_ops', torch.zeros(1))
-        m.register_buffer('total_params', torch.zeros(1))
+        m.register_buffer('total_ops', torch.zeros(1, dtype=default_dtype))
+        m.register_buffer('total_params', torch.zeros(1, dtype=default_dtype))
 
         for p in m.parameters():
-            m.total_params += torch.Tensor([p.numel()])
+            m.total_params += torch.DoubleTensor([p.numel()])
 
         m_type = type(m)
         fn = None
         if m_type in custom_ops:  # if defined both op maps, use custom_ops to overwrite.
+            print("[Customized] %s" % m._get_name())
             fn = custom_ops[m_type]
         elif m_type in register_hooks:
+            print("[THOP Defined] %s" % m._get_name())
             fn = register_hooks[m_type]
+        else:
+            print("[Not found] %s" % m._get_name())
 
         if fn is None:
             if verbose:
@@ -146,17 +147,21 @@ def profile_2(model: nn.Module, inputs, custom_ops=None, verbose=True):
         fn = None
 
         # if defined both op maps, custom_ops takes higher priority.
-        if m_type in custom_ops:
+        if m_type in custom_ops:  # if defined both op maps, use custom_ops to overwrite.
+            print("[Customized] %s" % m._get_name())
             fn = custom_ops[m_type]
         elif m_type in register_hooks:
+            print("[THOP Defined] %s" % m._get_name())
             fn = register_hooks[m_type]
-
-        if fn is None:
-            if verbose:
-                logger.info("THOP has not implemented counting method for %s." % m._get_name())
         else:
-            if verbose:
-                logger.info("Register FLOP counter for module %s." % m._get_name())
+            print("[Not found] %s" % m._get_name())
+
+        # if verbose:
+        #     if fn is None:
+        #         print("THOP has not implemented counting method for %s." % m._get_name())
+        #     else:
+        #        print("Register FLOP counter for module %s." % m._get_name())
+        if fn is not None:
             handler_collection[m] = m.register_forward_hook(fn)
 
     training = model.training
@@ -174,7 +179,7 @@ def profile_2(model: nn.Module, inputs, custom_ops=None, verbose=True):
             #     m_ops, m_params = dfs_count(m, prefix=prefix + "\t")
             # else:
             #     m_ops, m_params = m.total_ops, m.total_params
-            if m in handler_collection:
+            if m in handler_collection and not isinstance(m, (nn.Sequential, nn.ModuleList)):
                 m_ops, m_params = m.total_ops, m.total_params
             else:
                 m_ops, m_params = dfs_count(m, prefix=prefix + "\t")
@@ -183,7 +188,7 @@ def profile_2(model: nn.Module, inputs, custom_ops=None, verbose=True):
         #  print(prefix, module._get_name(), (total_ops.item(), total_params.item()))
         return total_ops, total_params
 
-    total_ops, total_params = (_.item() for _ in dfs_count(model))
+    total_ops, total_params = dfs_count(model)
 
     # reset model to original status
     model.train(training)

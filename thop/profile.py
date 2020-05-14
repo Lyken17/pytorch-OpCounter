@@ -2,11 +2,17 @@ from distutils.version import LooseVersion
 
 from thop.vision.basic_hooks import *
 
+
 # logger = logging.getLogger(__name__)
 # logger.setLevel(logging.INFO)
-def prRed(skk): print("\033[91m{}\033[00m" .format(skk))
-def prGreen(skk): print("\033[92m{}\033[00m" .format(skk))
-def prYellow(skk): print("\033[93m{}\033[00m" .format(skk))
+def prRed(skk): print("\033[91m{}\033[00m".format(skk))
+
+
+def prGreen(skk): print("\033[92m{}\033[00m".format(skk))
+
+
+def prYellow(skk): print("\033[93m{}\033[00m".format(skk))
+
 
 if LooseVersion(torch.__version__) < LooseVersion("1.0.0"):
     logging.warning(
@@ -142,8 +148,8 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True):
         m.register_buffer('total_ops', torch.zeros(1, dtype=torch.float64))
         m.register_buffer('total_params', torch.zeros(1, dtype=torch.float64))
 
-        for p in m.parameters():
-            m.total_params += torch.DoubleTensor([p.numel()])
+        # for p in m.parameters():
+        #     m.total_params += torch.DoubleTensor([p.numel()])
 
         m_type = type(m)
 
@@ -161,10 +167,10 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True):
                 prRed("[WARN] Cannot find rule for %s. Treat it as zero Macs and zero Params." % m_type)
 
         if fn is not None:
-            handler_collection[m] = m.register_forward_hook(fn)
+            handler_collection[m] = (m.register_forward_hook(fn), m.register_forward_hook(count_parameters))
         types_collection.add(m_type)
 
-    training = model.training
+    prev_training_status = model.training
 
     model.eval()
     model.apply(add_hooks)
@@ -191,9 +197,10 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True):
     total_ops, total_params = dfs_count(model)
 
     # reset model to original status
-    model.train(training)
-    for m, handler in handler_collection.items():
-        handler.remove()
+    model.train(prev_training_status)
+    for m, (op_handler, params_handler) in handler_collection.items():
+        op_handler.remove()
+        params_handler.remove()
         m._buffers.pop("total_ops")
         m._buffers.pop("total_params")
 

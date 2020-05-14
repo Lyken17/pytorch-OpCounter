@@ -8,6 +8,13 @@ from torch.nn.modules.conv import _ConvNd
 multiply_adds = 1
 
 
+def count_parameters(m, x, y):
+    total_params = 0
+    for p in m.parameters():
+        total_params += torch.DoubleTensor([p.numel()])
+    m.total_params[0] = total_params
+
+
 def zero_ops(m, x, y):
     m.total_ops += torch.DoubleTensor([int(0)])
 
@@ -119,6 +126,7 @@ def count_upsample(m, x, y):
         total_ops = y.nelement() * (13 * 2 + 5)
 
     m.total_ops += torch.DoubleTensor([int(total_ops)])
+
 
 # nn.Linear
 def count_linear(m, x, y):

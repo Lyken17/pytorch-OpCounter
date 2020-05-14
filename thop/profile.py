@@ -1,6 +1,7 @@
 from distutils.version import LooseVersion
 
 from thop.vision.basic_hooks import *
+from thop.rnn_hooks import *
 
 
 # logger = logging.getLogger(__name__)
@@ -58,7 +59,14 @@ register_hooks = {
 
     nn.Upsample: count_upsample,
     nn.UpsamplingBilinear2d: count_upsample,
-    nn.UpsamplingNearest2d: count_upsample
+    nn.UpsamplingNearest2d: count_upsample,
+
+    nn.RNNCell: count_rnn_cell,
+    nn.GRUCell: count_gru_cell,
+    nn.LSTMCell: count_lstm_cell,
+    nn.RNN: count_rnn,
+    nn.GRU: count_gru,
+    nn.LSTM: count_lstm,
 }
 
 

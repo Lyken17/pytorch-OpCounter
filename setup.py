@@ -8,10 +8,10 @@ from setuptools.command.install import install
 
 readme = open('README.md').read()
 
-VERSION = '0.0.31'
+VERSION = '0.0.4'
 
 requirements = [
-    'torch>=1.0.0',
+    'torch',
 ]
 
 # import subprocess

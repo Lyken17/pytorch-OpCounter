@@ -35,7 +35,6 @@ register_hooks = {
     nn.BatchNorm1d: count_bn,
     nn.BatchNorm2d: count_bn,
     nn.BatchNorm3d: count_bn,
-    nn.SyncBatchNorm: count_bn,
 
     nn.ReLU: zero_ops,
     nn.ReLU6: zero_ops,
@@ -70,6 +69,10 @@ register_hooks = {
     nn.LSTM: count_lstm,
 }
 
+if LooseVersion(torch.__version__) >= LooseVersion("1.1.0"):
+    register_hooks.update({
+        nn.SyncBatchNorm: count_bn
+    })
 
 def profile_origin(model, inputs, custom_ops=None, verbose=True):
     handler_collection = []

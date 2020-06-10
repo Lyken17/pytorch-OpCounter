@@ -89,7 +89,7 @@ def count_avgpool(m, x, y):
 
 
 def count_adap_avgpool(m, x, y):
-    kernel = torch.DoubleTensor([*(x[0].shape[2:])]) // torch.DoubleTensor(list((m.output_size,))).squeeze()
+    kernel = torch.DoubleTensor([*(x[0].shape[2:])]) // torch.DoubleTensor([*(y.shape[2:])])
     total_add = torch.prod(kernel)
     total_div = 1
     kernel_ops = total_add + total_div

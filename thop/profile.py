@@ -157,6 +157,9 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True):
         custom_ops = {}
 
     def add_hooks(m: nn.Module):
+        if 'total_ops' in m._buffers:
+            return
+
         m.register_buffer('total_ops', torch.zeros(1, dtype=torch.float64))
         m.register_buffer('total_params', torch.zeros(1, dtype=torch.float64))
 
@@ -190,7 +193,7 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True):
     with torch.no_grad():
         model(*inputs)
 
-    def dfs_count(module: nn.Module, prefix="\t") -> (int, int):
+    def dfs_count(module: nn.Module, known: set(), prefix="\t") -> (int, int):
         total_ops, total_params = 0, 0
         for m in module.children():
             # if not hasattr(m, "total_ops") and not hasattr(m, "total_params"):  # and len(list(m.children())) > 0:
@@ -200,13 +203,15 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True):
             if m in handler_collection and not isinstance(m, (nn.Sequential, nn.ModuleList)):
                 m_ops, m_params = m.total_ops.item(), m.total_params.item()
             else:
-                m_ops, m_params = dfs_count(m, prefix=prefix + "\t")
-            total_ops += m_ops
+                m_ops, m_params = dfs_count(m, known, prefix=prefix + "\t")
+            if id(m) not in known:
+                total_ops += m_ops
+                known.add(id(m))
             total_params += m_params
         #  print(prefix, module._get_name(), (total_ops.item(), total_params.item()))
         return total_ops, total_params
 
-    total_ops, total_params = dfs_count(model)
+    total_ops, total_params = dfs_count(model, set())
 
     # reset model to original status
     model.train(prev_training_status)

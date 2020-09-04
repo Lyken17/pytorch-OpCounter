@@ -40,7 +40,7 @@ OR
     
 ## Results of Recent Models
 
-The implementation are adapted from `torchvision`. Following results can be obtained using [benchmark/evaluate_famours_models.py](benchmark/evaluate_famous_models.py).
+The implementation are adapted from `torchvision`. Following results can be obtained using [benchmark/evaluate_famous_models.py](benchmark/evaluate_famous_models.py).
 
 <p align="center">
 <table>

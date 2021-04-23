@@ -1,3 +1,5 @@
+import copy
+
 from distutils.version import LooseVersion
 
 from thop.vision.basic_hooks import *
@@ -151,6 +153,7 @@ def profile_origin(model, inputs, custom_ops=None, verbose=True):
 
 
 def profile(model: nn.Module, inputs, custom_ops=None, verbose=True):
+    model = copy.deepcopy(model)
     handler_collection = {}
     types_collection = set()
     if custom_ops is None:

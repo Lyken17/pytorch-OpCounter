@@ -11,6 +11,7 @@ OR
 ## How to use 
 * Basic usage 
     ```python
+    import torch
     from torchvision.models import resnet50
     from thop import profile
     model = resnet50()
@@ -24,7 +25,7 @@ OR
         # your definition
     def count_your_model(model, x, y):
         # your rule here
-    
+        # Note that your rule only calculate the ops and params except its submodule's ops and params
     input = torch.randn(1, 3, 224, 224)
     macs, params = profile(model, inputs=(input, ), 
                             custom_ops={YourModule: count_your_model})

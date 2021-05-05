@@ -198,7 +198,7 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, ret_layer_i
             #     m_ops, m_params = dfs_count(m, prefix=prefix + "\t")
             # else:
             #     m_ops, m_params = m.total_ops, m.total_params
-            next_dict = None
+            next_dict = {}
             if m in handler_collection and not isinstance(m, (nn.Sequential, nn.ModuleList)):
                 m_ops, m_params = m.total_ops.item(), m.total_params.item()
             else:

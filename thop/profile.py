@@ -150,7 +150,7 @@ def profile_origin(model, inputs, custom_ops=None, verbose=True):
     return total_ops, total_params
 
 
-def profile(model: nn.Module, inputs, custom_ops=None, verbose=True):
+def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, ret_layer_info=False):
     handler_collection = {}
     types_collection = set()
     if custom_ops is None:
@@ -192,21 +192,24 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True):
 
     def dfs_count(module: nn.Module, prefix="\t") -> (int, int):
         total_ops, total_params = 0, 0
-        for m in module.children():
+        ret_dict = {}
+        for n, m in module.named_children():
             # if not hasattr(m, "total_ops") and not hasattr(m, "total_params"):  # and len(list(m.children())) > 0:
             #     m_ops, m_params = dfs_count(m, prefix=prefix + "\t")
             # else:
             #     m_ops, m_params = m.total_ops, m.total_params
+            next_dict = None
             if m in handler_collection and not isinstance(m, (nn.Sequential, nn.ModuleList)):
                 m_ops, m_params = m.total_ops.item(), m.total_params.item()
             else:
-                m_ops, m_params = dfs_count(m, prefix=prefix + "\t")
+                m_ops, m_params, next_dict = dfs_count(m, prefix=prefix + "\t")
+            ret_dict[n] = (m_ops, m_params, next_dict)
             total_ops += m_ops
             total_params += m_params
-        #  print(prefix, module._get_name(), (total_ops.item(), total_params.item()))
-        return total_ops, total_params
+        # print(prefix, module._get_name(), (total_ops, total_params))
+        return total_ops, total_params, ret_dict
 
-    total_ops, total_params = dfs_count(model)
+    total_ops, total_params, ret_dict = dfs_count(model)
 
     # reset model to original status
     model.train(prev_training_status)
@@ -216,4 +219,6 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True):
         m._buffers.pop("total_ops")
         m._buffers.pop("total_params")
 
+    if ret_layer_info:
+        return total_ops, total_params, ret_dict
     return total_ops, total_params

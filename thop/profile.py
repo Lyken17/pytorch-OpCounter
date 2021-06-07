@@ -74,7 +74,7 @@ if LooseVersion(torch.__version__) >= LooseVersion("1.1.0"):
         nn.SyncBatchNorm: count_bn
     })
 
-def profile_origin(model, inputs, custom_ops=None, verbose=True):
+def profile_origin(model, inputs, keyword_inputs=None, custom_ops=None, verbose=True):
     handler_collection = []
     types_collection = set()
     if custom_ops is None:
@@ -120,7 +120,7 @@ def profile_origin(model, inputs, custom_ops=None, verbose=True):
     model.apply(add_hooks)
 
     with torch.no_grad():
-        model(*inputs)
+        model(*inputs, **keyword_inputs)
 
     total_ops = 0
     total_params = 0
@@ -150,7 +150,7 @@ def profile_origin(model, inputs, custom_ops=None, verbose=True):
     return total_ops, total_params
 
 
-def profile(model: nn.Module, inputs, custom_ops=None, verbose=True):
+def profile(model: nn.Module, inputs, keyword_inputs=None, custom_ops=None, verbose=True):
     handler_collection = {}
     types_collection = set()
     if custom_ops is None:
@@ -188,7 +188,7 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True):
     model.apply(add_hooks)
 
     with torch.no_grad():
-        model(*inputs)
+        model(*inputs, **keyword_inputs)
 
     def dfs_count(module: nn.Module, prefix="\t") -> (int, int):
         total_ops, total_params = 0, 0

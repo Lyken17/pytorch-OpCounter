@@ -1,4 +1,4 @@
-from collections import Iterable
+from collections.abc import Iterable
 
 
 def clever_format(nums, format="%.2f"):

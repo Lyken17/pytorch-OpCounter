@@ -54,6 +54,38 @@ def count_bn(m, x, y):
         total_ops = 2 * nelements
 
     m.total_ops += torch.DoubleTensor([int(total_ops)])
+    
+    
+def count_ln(m, x, y):
+    x = x[0]
+
+    nelements = x.numel()
+    if not m.training:
+        # same as count_bn
+        total_ops = 2 * nelements
+
+    m.total_ops += torch.DoubleTensor([int(total_ops)])
+
+
+def count_in(m, x, y):
+    x = x[0]
+
+    nelements = x.numel()
+    if not m.training:
+        # same as count_bn
+        total_ops = 2 * nelements
+
+    m.total_ops += torch.DoubleTensor([int(total_ops)])
+
+
+def count_prelu(m, x, y):
+    x = x[0]
+
+    nelements = x.numel()
+    if not m.training:
+        total_ops = nelements
+
+    m.total_ops += torch.DoubleTensor([int(total_ops)])
 
 
 def count_relu(m, x, y):
@@ -67,7 +99,8 @@ def count_relu(m, x, y):
 def count_softmax(m, x, y):
     x = x[0]
 
-    batch_size, nfeatures = x.size()
+    nfeatures = x.size()[m.dim]
+    batch_size = x.numel()//nfeatures
 
     total_exp = nfeatures
     total_add = nfeatures - 1

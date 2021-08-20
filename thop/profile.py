@@ -35,10 +35,16 @@ register_hooks = {
     nn.BatchNorm1d: count_bn,
     nn.BatchNorm2d: count_bn,
     nn.BatchNorm3d: count_bn,
+    nn.LayerNorm: count_ln,
+    nn.InstanceNorm1d: count_in,
+    nn.InstanceNorm2d: count_in,
+    nn.InstanceNorm2d: count_in,
 
     nn.ReLU: zero_ops,
     nn.ReLU6: zero_ops,
+    nn.PReLU: count_prelu,
     nn.LeakyReLU: count_relu,
+    nn.Softmax: count_softmax,
 
     nn.MaxPool1d: zero_ops,
     nn.MaxPool2d: zero_ops,

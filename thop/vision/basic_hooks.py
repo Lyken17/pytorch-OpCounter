@@ -10,9 +10,10 @@ multiply_adds = 1
 
 def count_parameters(m, x, y):
     total_params = 0
-    for p in m.parameters():
+    for p in m.parameters(recurse = False):
         total_params += torch.DoubleTensor([p.numel()])
-    m.total_params[0] = total_params
+    if type(total_params) != int:
+        m.total_params += total_params
 
 
 def zero_ops(m, x, y):

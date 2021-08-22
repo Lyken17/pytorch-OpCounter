@@ -196,19 +196,15 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, report_miss
         model(*inputs)
 
     def dfs_count(module: nn.Module, prefix="\t") -> (int, int):
+        if module in handler_collection and not isinstance(module, (nn.Sequential, nn.ModuleList)):
+            return module.total_ops.item(), module.total_params.item()
+
         total_ops, total_params = 0, 0
         for m in module.children():
-            # if not hasattr(m, "total_ops") and not hasattr(m, "total_params"):  # and len(list(m.children())) > 0:
-            #     m_ops, m_params = dfs_count(m, prefix=prefix + "\t")
-            # else:
-            #     m_ops, m_params = m.total_ops, m.total_params
-            if m in handler_collection and not isinstance(m, (nn.Sequential, nn.ModuleList)):
-                m_ops, m_params = m.total_ops.item(), m.total_params.item()
-            else:
-                m_ops, m_params = dfs_count(m, prefix=prefix + "\t")
+            m_ops, m_params = dfs_count(m, prefix=prefix + "\t")
             total_ops += m_ops
             total_params += m_params
-        #  print(prefix, module._get_name(), (total_ops.item(), total_params.item()))
+
         return total_ops, total_params
 
     total_ops, total_params = dfs_count(model)

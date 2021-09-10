@@ -35,6 +35,12 @@ register_hooks = {
     nn.BatchNorm1d: count_bn,
     nn.BatchNorm2d: count_bn,
     nn.BatchNorm3d: count_bn,
+    nn.LayerNorm: count_ln,
+    nn.InstanceNorm1d: count_in,
+    nn.InstanceNorm2d: count_in,
+    nn.InstanceNorm3d: count_in,
+    nn.PReLU: count_prelu,
+    nn.Softmax: count_softmax,
 
     nn.ReLU: zero_ops,
     nn.ReLU6: zero_ops,

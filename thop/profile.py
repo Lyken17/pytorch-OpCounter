@@ -73,7 +73,9 @@ register_hooks = {
     nn.RNN: count_rnn,
     nn.GRU: count_gru,
     nn.LSTM: count_lstm,
-    nn.Transformer: count_Transformer
+    nn.Transformer: count_Transformer,
+    nn.Sequential: zero_ops,
+
 }
 
 if LooseVersion(torch.__version__) >= LooseVersion("1.1.0"):
@@ -159,7 +161,7 @@ def profile_origin(model, inputs, custom_ops=None, verbose=True, report_missing=
     return total_ops, total_params
 
 
-def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, report_missing=False):
+def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, ret_layer_info=False, report_missing=False):
     handler_collection = {}
     types_collection = set()
     if custom_ops is None:
@@ -203,22 +205,25 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, report_miss
         model(*inputs)
 
     def dfs_count(module: nn.Module, prefix="\t") -> (int, int):
-        total_ops, total_params = 0, 0
-        for m in module.children():
+        total_ops, total_params = module.total_ops.item(), 0
+        ret_dict = {}
+        for n, m in module.named_children():
             # if not hasattr(m, "total_ops") and not hasattr(m, "total_params"):  # and len(list(m.children())) > 0:
             #     m_ops, m_params = dfs_count(m, prefix=prefix + "\t")
             # else:
             #     m_ops, m_params = m.total_ops, m.total_params
+            next_dict = {}
             if m in handler_collection and not isinstance(m, (nn.Sequential, nn.ModuleList)):
                 m_ops, m_params = m.total_ops.item(), m.total_params.item()
             else:
-                m_ops, m_params = dfs_count(m, prefix=prefix + "\t")
+                m_ops, m_params, next_dict = dfs_count(m, prefix=prefix + "\t")
+            ret_dict[n] = (m_ops, m_params, next_dict)
             total_ops += m_ops
             total_params += m_params
-        #  print(prefix, module._get_name(), (total_ops.item(), total_params.item()))
-        return total_ops, total_params
+        # print(prefix, module._get_name(), (total_ops, total_params))
+        return total_ops, total_params, ret_dict
 
-    total_ops, total_params = dfs_count(model)
+    total_ops, total_params, ret_dict = dfs_count(model)
 
     # reset model to original status
     model.train(prev_training_status)
@@ -228,4 +233,6 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, report_miss
         m._buffers.pop("total_ops")
         m._buffers.pop("total_params")
 
+    if ret_layer_info:
+        return total_ops, total_params, ret_dict
     return total_ops, total_params

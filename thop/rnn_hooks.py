@@ -197,6 +197,26 @@ def count_lstm(m: nn.LSTM, x, y):
 
     m.total_ops += torch.DoubleTensor([int(total_ops)])
     
+def count_Transformer(m: nn.Transformer, x, y):
+    total_ops = 0
+    src, tgt = x
+    if m.batch_first:
+        num_steps = src.shape[0]
+        target = tgt.shape[1]
+        sequence = src.shape[1]
+        embedding = src.shape[2]
+    else:
+        target = tgt.shape[0]
+        sequence = src.shape[0]
+        num_steps = src.shape[1]
+        embedding = src.shape[2]
+    num_head = m.nhead
+    encoder_layers = m.encoder.num_layers
+    decoder_layers = m.decoder.num_layers
+    # dim_forward(default = 2048)
+    forward = m.encoder.layers[0].linear1.out_features
+    total_ops = 0
+
     def MultiheadAttention(bool1, num_head, num_steps, target, sequence, embedding):
         if bool1 == 0:
             # linear_q,linear_k,linear_v all N,S,E

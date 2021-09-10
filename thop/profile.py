@@ -154,7 +154,6 @@ def profile_origin(model, inputs, custom_ops=None, verbose=True, report_missing=
     return total_ops, total_params
 
 
-
 def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, ret_layer_info=False, report_missing=False):
     handler_collection = {}
     types_collection = set()

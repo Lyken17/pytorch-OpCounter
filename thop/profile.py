@@ -74,11 +74,13 @@ if LooseVersion(torch.__version__) >= LooseVersion("1.1.0"):
         nn.SyncBatchNorm: count_bn
     })
 
-def profile_origin(model, inputs, custom_ops=None, verbose=True):
+def profile_origin(model, inputs, custom_ops=None, verbose=True, report_missing=False):
     handler_collection = []
     types_collection = set()
     if custom_ops is None:
         custom_ops = {}
+    if report_missing:
+        verbose = True
 
     def add_hooks(m):
         if len(list(m.children())) > 0:
@@ -106,7 +108,7 @@ def profile_origin(model, inputs, custom_ops=None, verbose=True):
             if m_type not in types_collection and verbose:
                 print("[INFO] Register %s() for %s." % (fn.__qualname__, m_type))
         else:
-            if m_type not in types_collection and verbose:
+            if m_type not in types_collection and report_missing:
                 prRed("[WARN] Cannot find rule for %s. Treat it as zero Macs and zero Params." % m_type)
 
         if fn is not None:
@@ -150,11 +152,15 @@ def profile_origin(model, inputs, custom_ops=None, verbose=True):
     return total_ops, total_params
 
 
-def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, ret_layer_info=False):
+
+def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, ret_layer_info=False, report_missing=False):
     handler_collection = {}
     types_collection = set()
     if custom_ops is None:
         custom_ops = {}
+    if report_missing:
+        # overwrite `verbose` option when enable report_missing
+        verbose = True
 
     def add_hooks(m: nn.Module):
         m.register_buffer('total_ops', torch.zeros(1, dtype=torch.float64))
@@ -175,7 +181,7 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, ret_layer_i
             if m_type not in types_collection and verbose:
                 print("[INFO] Register %s() for %s." % (fn.__qualname__, m_type))
         else:
-            if m_type not in types_collection and verbose:
+            if m_type not in types_collection and report_missing:
                 prRed("[WARN] Cannot find rule for %s. Treat it as zero Macs and zero Params." % m_type)
 
         if fn is not None:

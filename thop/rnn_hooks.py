@@ -237,7 +237,7 @@ def count_Transformer(m: nn.Transformer, x, y):
             total_multi += target * (sequence ** 2) * embedding ** 3 + \
                 target * sequence + target * (3 * sequence - 1)+1
         # number of heads and batchsize
-        total_multi *= total_multi * num_head*num_steps
+        total_multi *= num_head*num_steps
         # print(total_multi)
         # concat
         if bool1 == 0:

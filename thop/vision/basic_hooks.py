@@ -104,6 +104,9 @@ def count_softmax(m, x, y):
 
     total_exp = nfeatures
     total_add = nfeatures - 1
+    total_div = nfeatures
+    total_ops = batch_size * (total_exp + total_add + total_div)
+    m.total_ops += torch.DoubleTensor([int(total_ops)])
 
 
 def count_avgpool(m, x, y):

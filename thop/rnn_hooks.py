@@ -252,13 +252,11 @@ def count_Transformer(m: nn.Transformer, x, y):
         total_en = 0
         total_en += MultiheadAttention(0, num_head,
                                        num_steps, target, sequence, embedding)
-        print("multi",total_en)
         # fed_forward(2 conv1d)
         total_en += num_steps * sequence * forward * embedding
         total_en += num_steps * sequence * embedding * forward
         # norm1
         total_en += 2 * num_steps * embedding * sequence
-        print(total_en)
         return total_en
 
     def TransformerDecoderLayer(num_head, num_steps, target, sequence, embedding):
@@ -278,3 +276,5 @@ def count_Transformer(m: nn.Transformer, x, y):
         TransformerDecoderLayer(num_head, num_steps,
                                 target, sequence, embedding)
     m.total_ops += torch.DoubleTensor([int(total_ops)])
+
+

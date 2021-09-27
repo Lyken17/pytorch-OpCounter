@@ -220,45 +220,45 @@ def count_Transformer(m: nn.Transformer, x, y):
     def MultiheadAttention(bool1, num_head, num_steps, target, sequence, embedding):
         if bool1 == 0:
             # linear_q,linear_k,linear_v all N,S,E
-            total_multi = 3 * sequence ** 2 * embedding
+            total_multi = 3 * sequence * embedding ** 2
             # self_attn softmax(Q*K_T/sqrt(dk))*V
-            total_multi += sequence ** 4 * embedding ** 2 + \
-                sequence ** 2 + sequence * (3 * sequence - 1) + 1
+            total_multi += (sequence ** 4 * (embedding/num_head) ** 2 + \
+                sequence ** 2 + sequence * (3 * sequence - 1) + 1) * num_head
+            #linear
+            total_multi += sequence * embedding ** 2
+            #layernorm
+            total_multi += 2 * sequence * embedding
         elif bool1 == 1:
             # linear_q,linear_k,linear_v
-            total_multi = 3 * target ** 2 * embedding
+            total_multi = 3 * target * embedding ** 2
             # self_attn softmax(Q*K_T/sqrt(dk))*V
-            total_multi += target ** 4 * embedding ** 2 + \
-                target ** 2 + target * (3 * target-1) + 1
+            total_multi += (target ** 4 * (embedding/num_head) ** 2 + \
+                target ** 2 + target * (3 * target-1) + 1) * num_head
+            total_multi += target * embedding ** 2
+            total_multi += 2 * target * embedding
         elif bool1 == 2:
             # linear_q,linear_k,linear_v
-            total_multi = embedding * (2 * sequence ** 2 + target ** 2)
+            total_multi = embedding ** 2 * (2 * sequence + target)
             # self_attn softmax(Q*K_T/sqrt(dk))*V
-            total_multi += target ** 2 * sequence ** 2 * embedding ** 2 + \
-                target * sequence + target * (3 * sequence - 1)+1
+            total_multi += (target ** 2 * sequence ** 2 * (embedding/num_head) ** 2 + \
+                target * sequence + target * (3 * sequence - 1)+1) * num_head
+            total_multi += target * embedding ** 2
+            total_multi += 2 * target * embedding
         # number of heads and batchsize
-        total_multi *= num_head*num_steps
-        # print(total_multi)
-        # concat
-        if bool1 == 0:
-            total_multi += num_steps * (sequence ** 2 * num_head * embedding)
-            # print(total_multi)
-        else:
-            total_multi += num_steps * (target ** 2 * num_head * embedding)
-        # output-> (N,S,E) or (S,N,E)
+        total_multi *= num_steps
         return total_multi
 
     def TransformerEncoderLayer(num_head, num_steps, target, sequence, embedding):
         total_en = 0
         total_en += MultiheadAttention(0, num_head,
                                        num_steps, target, sequence, embedding)
-        # linear1 in_features= embedding, outfeatures= dim_forward
-        total_en += num_steps * sequence ** 2 * forward * embedding
-        # linear2
-        total_en += num_steps * sequence * embedding * forward ** 2
-        # norm1 norm2
-        total_en += 2 * 2 * num_steps * embedding * sequence
-        # droup out 2,3
+        print("multi",total_en)
+        # fed_forward(2 conv1d)
+        total_en += num_steps * sequence * forward * embedding
+        total_en += num_steps * sequence * embedding * forward
+        # norm1
+        total_en += 2 * num_steps * embedding * sequence
+        print(total_en)
         return total_en
 
     def TransformerDecoderLayer(num_head, num_steps, target, sequence, embedding):
@@ -268,10 +268,10 @@ def count_Transformer(m: nn.Transformer, x, y):
         total_de += MultiheadAttention(2, num_head,
                                        num_steps, target, sequence, embedding)
         # linear1 linear2 fft
-        total_de += num_steps * target ** 2 * forward * embedding 
-        total_de += num_steps * target * embedding * (forward ** 2)
-        # 3* norm
-        total_de += 3 * 2 * num_steps * embedding * target
+        total_de += num_steps * target * forward * embedding 
+        total_de += num_steps * target * embedding * forward
+        # layernorm
+        total_de += 2 * num_steps * embedding * target
         return total_de
     total_ops = encoder_layers * TransformerEncoderLayer(num_head, num_steps, target, sequence, embedding) + \
         decoder_layers * \

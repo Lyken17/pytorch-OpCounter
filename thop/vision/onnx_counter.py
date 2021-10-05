@@ -5,18 +5,18 @@ from thop.vision.basic_hooks import zero_ops
 from .counter import *
 
 
-def onnx_counter_MatMul(diction, node):
+def onnx_counter_matmul(diction, node):
     input1 = node.input[0]
     input2 = node.input[1]
     input1_dim = diction[input1]
     input2_dim = diction[input2]
     out_size = np.append(input1_dim[0:-1], input2_dim[-1])
     output_name = node.output[0]
-    macs = counter_MatMul(input1_dim, out_size[-2:])
+    macs = counter_matmul(input1_dim, out_size[-2:])
     return macs, out_size, output_name
 
 
-def onnx_counter_Add(diction, node):
+def onnx_counter_add(diction, node):
     if np.array(diction[node.input[1]]).size >= np.array(diction[node.input[0]]).size:
         out_size = diction[node.input[1]]
     else:
@@ -26,7 +26,7 @@ def onnx_counter_Add(diction, node):
     return macs, out_size, output_name
 
 
-def onnx_counter_Conv(diction, node):
+def onnx_counter_conv(diction, node):
     # print(node)
     # bias,kernelsize,outputsize
     for i in node.input:
@@ -62,7 +62,7 @@ def onnx_counter_Conv(diction, node):
     return macs, output_size, output_name
 
 
-def onnx_counter_Constant(diction, node):
+def onnx_counter_constant(diction, node):
     # print(node)
     macs = counter_zero_ops()
     output_name = node.output[0]
@@ -71,12 +71,12 @@ def onnx_counter_Constant(diction, node):
     return macs, output_size, output_name
 
 
-def onnx_counter_Mul(diction, node):
+def onnx_counter_mul(diction, node):
     if np.array(diction[node.input[1]]).size >= np.array(diction[node.input[0]]).size:
         input_size = diction[node.input[1]]
     else:
         input_size = diction[node.input[0]]
-    macs = counter_Mul(np.prod(input_size))
+    macs = counter_mul(np.prod(input_size))
     output_size = diction[node.input[0]]
     output_name = node.output[0]
     return macs, output_size, output_name
@@ -170,11 +170,11 @@ def onnx_counter_softmax(diction, node):
 
 
 onnx_operators = {
-    'MatMul': onnx_counter_MatMul,
-    'Add': onnx_counter_Add,
-    'Conv': onnx_counter_Conv,
-    'Mul': onnx_counter_Mul,
-    'Constant': onnx_counter_Constant,
+    'MatMul': onnx_counter_matmul,
+    'Add': onnx_counter_add,
+    'Conv': onnx_counter_conv,
+    'Mul': onnx_counter_mul,
+    'Constant': onnx_counter_constant,
     'BatchNormalization': onnx_counter_bn,
     'Relu': onnx_counter_relu,
     'ReduceMean': onnx_counter_reducemean,

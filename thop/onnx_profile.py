@@ -7,7 +7,7 @@ from thop.vision.counter import *
 from thop.vision.onnx_counter import *
 
 
-class onnx_profile():
+class OnnxProfile():
     def __init__(self) -> None:
         pass
 

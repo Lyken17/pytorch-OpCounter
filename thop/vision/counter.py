@@ -68,13 +68,13 @@ def counter_linear(in_feature, num_elements):
     return torch.DoubleTensor([int(in_feature * num_elements)])
 
 
-def counter_MatMul(input_size, output_size):
+def counter_matmul(input_size, output_size):
     input_size = np.array(input_size)
     output_size = np.array(output_size)
     return np.prod(input_size) * output_size[-1]
 
 
-def counter_Mul(input_size):
+def counter_mul(input_size):
     return input_size
 
 

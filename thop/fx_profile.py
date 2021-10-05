@@ -29,7 +29,6 @@ count_map = {
     "<built-in function truediv>": count_mul,
 }
 
-
 from torch.fx import symbolic_trace
 from torch.fx.passes.shape_prop import ShapeProp
 
@@ -44,7 +43,6 @@ def fx_profile(m: nn.Module, input: th.Tensor, verbose=True):
     fprint = null_print
     if verbose:
         fprint = print
-
     
     v_maps = {}
     total_flops = 0
@@ -70,12 +68,12 @@ def fx_profile(m: nn.Module, input: th.Tensor, verbose=True):
         if node.op in ["output", "placeholder"]:
             node_flops = 0
         elif node.op == "call_function":
-            # torch internal function
+            # torch internal functions
             if str(node.target) in count_map:
                 node_flops = count_map[str(node.target)](input_shapes, output_shapes)
             pass
         elif node.op == "call_method":
-            # torch internal function
+            # torch internal functions
             # print(str(node.target) in count_map, str(node.target), count_map.keys())
             if str(node.target) in count_map:
                 node_flops = count_map[str(node.target)](input_shapes, output_shapes)
@@ -99,23 +97,25 @@ def fx_profile(m: nn.Module, input: th.Tensor, verbose=True):
     return total_flops
 
 
-class MyOP(nn.Module):
-    def forward(self, input):
-        return input / 1
 
-class MyModule(torch.nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.linear1 = torch.nn.Linear(5, 3)
-        self.linear2 = torch.nn.Linear(5, 3)
-        self.myop = MyOP()
-
-    def forward(self, x):
-        out1 = self.linear1(x)
-        out2 = self.linear2(x).clamp(min=0.0, max=1.0)
-        return self.myop(out1 + out2)
 
 if __name__ == '__main__':
+    class MyOP(nn.Module):
+        def forward(self, input):
+            return input / 1
+
+    class MyModule(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.linear1 = torch.nn.Linear(5, 3)
+            self.linear2 = torch.nn.Linear(5, 3)
+            self.myop = MyOP()
+
+        def forward(self, x):
+            out1 = self.linear1(x)
+            out2 = self.linear2(x).clamp(min=0.0, max=1.0)
+            return self.myop(out1 + out2)
+            
     net = MyModule()
     data = th.randn(20, 5)
     flops = fx_profile(net, data, verbose=False)

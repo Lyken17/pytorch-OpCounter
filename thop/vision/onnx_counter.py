@@ -12,19 +12,22 @@ def onnx_counter_MatMul(diction, node):
     input2_dim = diction[input2]
     out_size = np.append(input1_dim[0:-1], input2_dim[-1])
     output_name = node.output[0]
-    macs = counter_MatMul(input1_dim, out_size)
+    macs = counter_MatMul(input1_dim, out_size[-2:])
     return macs, out_size, output_name
 
 
 def onnx_counter_Add(diction, node):
-    out_size = diction[node.input[1]]
+    if np.array(diction[node.input[1]]).size >= np.array(diction[node.input[0]]).size:
+        out_size = diction[node.input[1]]
+    else:
+        out_size = diction[node.input[0]]
     output_name = node.output[0]
     macs = counter_zero_ops()
     return macs, out_size, output_name
 
 
 def onnx_counter_Conv(diction, node):
-    #print(node)
+    # print(node)
     # bias,kernelsize,outputsize
     for i in node.input:
         if('bias' in i):
@@ -49,33 +52,137 @@ def onnx_counter_Conv(diction, node):
     hw = dim_input[-np.array(dim_kernel).size:]
     for i in range(hw.size):
         hw[i] = int((hw[i]+2*dim_pad[i]-dim_dil[i] *
-        (dim_kernel[i]-1))/dim_stride[i])
-    output_size = np.append(output_size,hw)
-    #print(output_size)
+                     (dim_kernel[i]-1))/dim_stride[i])
+    output_size = np.append(output_size, hw)
+    # print(output_size)
     #print(np.prod(dim_bias), np.prod(dim_kernel), np.prod(output_size))
-    macs = counter_conv(np.prod(dim_bias), np.prod(dim_kernel), np.prod(output_size))
+    macs = counter_conv(np.prod(dim_bias), np.prod(
+        dim_kernel), np.prod(output_size))
     output_name = node.output[0]
     return macs, output_size, output_name
 
-def onnx_counter_Constant(diction,node):
-    #print(node)
+
+def onnx_counter_Constant(diction, node):
+    # print(node)
     macs = counter_zero_ops()
     output_name = node.output[0]
     output_size = [1]
-    print(macs, output_size, output_name)
+    #print(macs, output_size, output_name)
     return macs, output_size, output_name
 
+
 def onnx_counter_Mul(diction, node):
-    print(node)
-    
-    pass
+    if np.array(diction[node.input[1]]).size >= np.array(diction[node.input[0]]).size:
+        input_size = diction[node.input[1]]
+    else:
+        input_size = diction[node.input[0]]
+    macs = counter_Mul(np.prod(input_size))
+    output_size = diction[node.input[0]]
+    output_name = node.output[0]
+    return macs, output_size, output_name
+
+
+def onnx_counter_bn(diction, node):
+    input_size = diction[node.input[0]]
+    macs = counter_norm(np.prod(input_size))
+    output_name = node.output[0]
+    output_size = input_size
+    return macs, output_size, output_name
+
+
+def onnx_counter_relu(diction, node):
+    input_size = diction[node.input[0]]
+    macs = counter_relu(np.prod(input_size))
+    output_name = node.output[0]
+    output_size = input_size
+    return macs, output_size, output_name
+
+
+def onnx_counter_reducemean(diction, node):
+    input_size = diction[node.input[0]]
+    macs = counter_zero_ops()
+    output_name = node.output[0]
+    output_size = input_size
+    #print("reduce",macs, output_size, output_name)
+    return macs, output_size, output_name
+
+
+def onnx_counter_sub(diction, node):
+    input_size = diction[node.input[0]]
+    macs = counter_zero_ops()
+    output_name = node.output[0]
+    output_size = input_size
+    #print("sub",macs, output_size, output_name)
+    return macs, output_size, output_name
+
+
+def onnx_counter_pow(diction, node):
+    if np.array(diction[node.input[1]]).size >= np.array(diction[node.input[0]]).size:
+        input_size = diction[node.input[1]]
+    else:
+        input_size = diction[node.input[0]]
+    macs = counter_pow(np.prod(input_size))
+    output_name = node.output[0]
+    output_size = input_size
+    #print("pow",macs, output_size, output_name)
+    return macs, output_size, output_name
+
+
+def onnx_counter_sqrt(diction, node):
+    input_size = diction[node.input[0]]
+    macs = counter_sqrt(np.prod(input_size))
+    output_name = node.output[0]
+    output_size = input_size
+    #print("sqrt",macs, output_size, output_name)
+    return macs, output_size, output_name
+
+
+def onnx_counter_div(diction, node):
+    if np.array(diction[node.input[1]]).size >= np.array(diction[node.input[0]]).size:
+        input_size = diction[node.input[1]]
+    else:
+        input_size = diction[node.input[0]]
+    macs = counter_div(np.prod(input_size))
+    output_name = node.output[0]
+    output_size = input_size
+    #print("div",macs, output_size, output_name)
+    return macs, output_size, output_name
+
+
+def onnx_counter_instance(diction, node):
+    input_size = diction[node.input[0]]
+    macs = counter_norm(np.prod(input_size))
+    output_name = node.output[0]
+    output_size = input_size
+    return macs, output_size, output_name
+
+
+def onnx_counter_softmax(diction, node):
+    input_size = diction[node.input[0]]
+    dim = node.attribute[0].i
+    nfeatures = input_size[dim]
+    batch_size = np.prod(input_size) / nfeatures
+    macs = counter_softmax(nfeatures, batch_size)
+    output_name = node.output[0]
+    output_size = input_size
+    #print("soft",macs, output_size, output_name)
+    return macs, output_size, output_name
 
 
 onnx_operators = {
     'MatMul': onnx_counter_MatMul,
     'Add': onnx_counter_Add,
     'Conv': onnx_counter_Conv,
-    'Mul' : onnx_counter_Mul,
-    'Constant' : onnx_counter_Constant,
+    'Mul': onnx_counter_Mul,
+    'Constant': onnx_counter_Constant,
+    'BatchNormalization': onnx_counter_bn,
+    'Relu': onnx_counter_relu,
+    'ReduceMean': onnx_counter_reducemean,
+    'Sub': onnx_counter_sub,
+    'Pow': onnx_counter_pow,
+    'Sqrt': onnx_counter_sqrt,
+    'Div': onnx_counter_div,
+    'InstanceNormalization': onnx_counter_instance,
+    'Softmax': onnx_counter_softmax,
     None: None,
 }

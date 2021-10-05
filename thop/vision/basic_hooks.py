@@ -43,14 +43,16 @@ def count_convNd_ver2(m: _ConvNd, x: (torch.Tensor,), y: torch.Tensor):
     #     kernel_ops += + m.bias.nelement()
     # # x N x H x W x Cout x (Cin x Kw x Kh + bias)
     # m.total_ops += torch.DoubleTensor([int(output_size * kernel_ops)])
-    m.total_ops += counter_conv(m.bias.nelement(), m.weight.nelement(), output_size)
+    m.total_ops += counter_conv(m.bias.nelement(),
+                                m.weight.nelement(), output_size)
+
 
 def count_bn(m, x, y):
     x = x[0]
     if not m.training:
         m.total_ops += counter_norm(x.numel())
 
-    
+
 def count_ln(m, x, y):
     x = x[0]
     if not m.training:
@@ -78,11 +80,9 @@ def count_relu(m, x, y):
 
     m.total_ops += counter_relu(nelements)
 
-    
+
 def count_softmax(m, x, y):
     x = x[0]
-
-    batch_size, nfeatures = x.size()
     nfeatures = x.size()[m.dim]
     batch_size = x.numel()//nfeatures
 
@@ -99,7 +99,8 @@ def count_avgpool(m, x, y):
 
 
 def count_adap_avgpool(m, x, y):
-    kernel = torch.DoubleTensor([*(x[0].shape[2:])]) // torch.DoubleTensor([*(y.shape[2:])])
+    kernel = torch.DoubleTensor(
+        [*(x[0].shape[2:])]) // torch.DoubleTensor([*(y.shape[2:])])
     total_add = torch.prod(kernel)
     num_elements = y.numel()
 
@@ -109,7 +110,8 @@ def count_adap_avgpool(m, x, y):
 # TODO: verify the accuracy
 def count_upsample(m, x, y):
     if m.mode not in ("nearest", "linear", "bilinear", "bicubic",):  # "trilinear"
-        logging.warning("mode %s is not implemented yet, take it a zero op" % m.mode)
+        logging.warning(
+            "mode %s is not implemented yet, take it a zero op" % m.mode)
         return counter_zero_ops()
 
     if m.mode == "nearest":

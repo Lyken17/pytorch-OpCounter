@@ -6,10 +6,12 @@ import numpy as np
 from thop.vision.counter import *
 from thop.vision.onnx_counter import *
 
+
 class onnx_profile():
     def __init__(self) -> None:
         pass
-    def calculate_params(self,model: onnx.ModelProto):
+
+    def calculate_params(self, model: onnx.ModelProto):
         onnx_weights = model.graph.initializer
         params = 0
 
@@ -22,7 +24,7 @@ class onnx_profile():
 
         return params
 
-    def create_dic(self,weight, input , output):
+    def create_dic(self, weight, input, output):
         diction = {}
         for w in weight:
             dim = np.array(w.dims)
@@ -48,30 +50,26 @@ class onnx_profile():
             if(dim.size == 1):
                 diction[str(o.name)] = np.append(1, dim)
         return diction
+
     def nodes_counter(self, diction, node):
         if node.op_type not in onnx_operators:
-            print("Sorry, we haven't add ",node.op_type,"into dictionary.")
+            print("Sorry, we haven't add ", node.op_type, "into dictionary.")
             return
         else:
             fn = onnx_operators[node.op_type]
-            return fn(diction,node)
-    
-        
-            
+            return fn(diction, node)
 
-    def calculate_macs(self,model: onnx.ModelProto) -> torch.DoubleTensor:
+    def calculate_macs(self, model: onnx.ModelProto) -> torch.DoubleTensor:
         macs = 0
         name2dims = {}
         weight = model.graph.initializer
         nodes = model.graph.node
         input = model.graph.input
         output = model.graph.output
-        name2dims = self.create_dic(weight,input,output)
+        name2dims = self.create_dic(weight, input, output)
         macs = 0
         for n in nodes:
-            macs_adding, out_size,outname = self.nodes_counter(name2dims, n)
+            macs_adding, out_size, outname = self.nodes_counter(name2dims, n)
             name2dims[outname] = out_size
             macs += macs_adding
         return np.array(macs[0])
-            
-

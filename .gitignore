@@ -1,3 +1,6 @@
+
+.DS_Store
+fx_explore/
 # *test*
 *.t7
 *.pth

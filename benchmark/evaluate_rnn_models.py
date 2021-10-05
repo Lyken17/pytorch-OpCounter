@@ -41,8 +41,8 @@ models = {
         nn.LSTM(input_size, hidden_size, bidirectional=True, num_layers=4)),
 }
 
-print('{} | {} | {}'.format('Model', 'Params(M)', "FLOPs(G)"))
-print("---|---|---")
+fprint('{} | {} | {}'.format('Model', 'Params(M)', "FLOPs(G)"))
+fprint("---|---|---")
 
 for name, model in models.items():
     # time_first dummy inputs
@@ -51,7 +51,7 @@ for name, model in models.items():
         total_ops, total_params = profile(model, (inputs[0], ), verbose=False)
     else:
         total_ops, total_params = profile(model, (inputs, ), verbose=False)
-    print('{} | {:.2f} | {:.2f}'.format(
+    fprint('{} | {:.2f} | {:.2f}'.format(
         name,
         total_params / 1e6,
         total_ops / 1e9,

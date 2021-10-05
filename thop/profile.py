@@ -6,13 +6,13 @@ from thop.rnn_hooks import *
 
 # logger = logging.getLogger(__name__)
 # logger.setLevel(logging.INFO)
-def prRed(skk): print("\033[91m{}\033[00m".format(skk))
+def prRed(skk): fprint("\033[91m{}\033[00m".format(skk))
 
 
-def prGreen(skk): print("\033[92m{}\033[00m".format(skk))
+def prGreen(skk): fprint("\033[92m{}\033[00m".format(skk))
 
 
-def prYellow(skk): print("\033[93m{}\033[00m".format(skk))
+def prYellow(skk): fprint("\033[93m{}\033[00m".format(skk))
 
 
 if LooseVersion(torch.__version__) < LooseVersion("1.0.0"):
@@ -104,11 +104,11 @@ def profile_origin(model, inputs, custom_ops=None, verbose=True, report_missing=
         if m_type in custom_ops:  # if defined both op maps, use custom_ops to overwrite.
             fn = custom_ops[m_type]
             if m_type not in types_collection and verbose:
-                print("[INFO] Customize rule %s() %s." % (fn.__qualname__, m_type))
+                fprint("[INFO] Customize rule %s() %s." % (fn.__qualname__, m_type))
         elif m_type in register_hooks:
             fn = register_hooks[m_type]
             if m_type not in types_collection and verbose:
-                print("[INFO] Register %s() for %s." % (fn.__qualname__, m_type))
+                fprint("[INFO] Register %s() for %s." % (fn.__qualname__, m_type))
         else:
             if m_type not in types_collection and report_missing:
                 prRed("[WARN] Cannot find rule for %s. Treat it as zero Macs and zero Params." % m_type)
@@ -176,11 +176,11 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, ret_layer_i
         if m_type in custom_ops:  # if defined both op maps, use custom_ops to overwrite.
             fn = custom_ops[m_type]
             if m_type not in types_collection and verbose:
-                print("[INFO] Customize rule %s() %s." % (fn.__qualname__, m_type))
+                fprint("[INFO] Customize rule %s() %s." % (fn.__qualname__, m_type))
         elif m_type in register_hooks:
             fn = register_hooks[m_type]
             if m_type not in types_collection and verbose:
-                print("[INFO] Register %s() for %s." % (fn.__qualname__, m_type))
+                fprint("[INFO] Register %s() for %s." % (fn.__qualname__, m_type))
         else:
             if m_type not in types_collection and report_missing:
                 prRed("[WARN] Cannot find rule for %s. Treat it as zero Macs and zero Params." % m_type)

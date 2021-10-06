@@ -43,7 +43,7 @@ def fx_profile(m: nn.Module, input: th.Tensor, verbose=True):
     fprint = null_print
     if verbose:
         fprint = print
-    
+
     v_maps = {}
     total_flops = 0
 
@@ -74,7 +74,7 @@ def fx_profile(m: nn.Module, input: th.Tensor, verbose=True):
             pass
         elif node.op == "call_method":
             # torch internal functions
-            # print(str(node.target) in count_map, str(node.target), count_map.keys())
+            # fprint(str(node.target) in count_map, str(node.target), count_map.keys())
             if str(node.target) in count_map:
                 node_flops = count_map[str(node.target)](input_shapes, output_shapes)
         elif node.op == "call_module":

@@ -1,8 +1,8 @@
 import torch
 import thop
+import torchvision
+dummy_input = torch.randn(10, 3, 224, 224)
+model = torchvision.models.alexnet(pretrained=True)
 
-m = torch.nn.Conv2d(128, 128, 1)
-x = torch.randn(1, 128, 16, 16)
-
-flops = thop.profile(m, inputs=(x,), verbose=True)
+flops = thop.profile(model, inputs=(dummy_input,), verbose=True)
 print(flops)

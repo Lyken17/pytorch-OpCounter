@@ -26,9 +26,7 @@ def count_convNd(m: _ConvNd, x: (torch.Tensor,), y: torch.Tensor):
     bias_ops = 1 if m.bias is not None else 0
 
     # N x Cout x H x W x  (Cin x Kw x Kh + bias)
-    total_ops = y.nelement() * (m.in_channels // m.groups * kernel_ops + bias_ops)
-
-    m.total_ops += torch.DoubleTensor([int(total_ops)])
+    m.total_ops += counter_conv(bias_ops,torch.zeros(m.weight.size()[2:]).numel(),y.nelement(),m.in_channels,m.groups)
 
 
 def count_convNd_ver2(m: _ConvNd, x: (torch.Tensor,), y: torch.Tensor):
@@ -94,7 +92,6 @@ def count_avgpool(m, x, y):
     # total_div = 1
     # kernel_ops = total_add + total_div
     num_elements = y.numel()
-
     m.total_ops += counter_avgpool(num_elements)
 
 
@@ -103,7 +100,6 @@ def count_adap_avgpool(m, x, y):
         [*(x[0].shape[2:])]) // torch.DoubleTensor([*(y.shape[2:])])
     total_add = torch.prod(kernel)
     num_elements = y.numel()
-
     m.total_ops += counter_adap_avg(total_add, num_elements)
 
 

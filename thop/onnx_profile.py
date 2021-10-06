@@ -54,7 +54,7 @@ class OnnxProfile():
     def nodes_counter(self, diction, node):
         if node.op_type not in onnx_operators:
             print("Sorry, we haven't add ", node.op_type, "into dictionary.")
-            return
+            return 0, None, None
         else:
             fn = onnx_operators[node.op_type]
             return fn(diction, node)

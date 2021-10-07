@@ -23,7 +23,7 @@ class OnnxProfile():
 
         return params
 
-    def create_dic(self, weight, input, output):
+    def create_dict(self, weight, input, output):
         diction = {}
         for w in weight:
             dim = np.array(w.dims)
@@ -65,7 +65,7 @@ class OnnxProfile():
         nodes = model.graph.node
         input = model.graph.input
         output = model.graph.output
-        name2dims = self.create_dic(weight, input, output)
+        name2dims = self.create_dict(weight, input, output)
         macs = 0
         for n in nodes:
             macs_adding, out_size, outname = self.nodes_counter(name2dims, n)

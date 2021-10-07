@@ -1,6 +1,8 @@
 import argparse
 import logging
-from .counter import *
+from .counter import counter_parameters, counter_conv, \
+    counter_norm, counter_relu, counter_softmax, counter_avgpool,\
+    counter_adap_avg, counter_zero_ops, counter_upsample, counter_linear
 import torch
 import torch.nn as nn
 from torch.nn.modules.conv import _ConvNd

@@ -3,8 +3,7 @@ import torch.nn
 import onnx
 from onnx import numpy_helper
 import numpy as np
-from thop.vision.counter import *
-from thop.vision.onnx_counter import *
+from thop.vision.onnx_counter import onnx_operators
 
 
 class OnnxProfile():

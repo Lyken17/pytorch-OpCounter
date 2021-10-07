@@ -2,7 +2,9 @@ import torch
 import numpy as np
 from onnx import numpy_helper
 from thop.vision.basic_hooks import zero_ops
-from .counter import *
+from .counter import counter_matmul, counter_zero_ops,\
+    counter_conv, counter_mul, counter_norm, counter_pow,\
+    counter_sqrt, counter_div, counter_softmax, counter_avgpool
 
 
 def onnx_counter_matmul(diction, node):

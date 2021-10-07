@@ -70,6 +70,7 @@ class OnnxProfile():
         macs = 0
         for n in nodes:
             macs_adding, out_size, outname = self.nodes_counter(name2dims, n)
+
             name2dims[outname] = out_size
             macs += macs_adding
         return np.array(macs[0])

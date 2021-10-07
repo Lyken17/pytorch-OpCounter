@@ -13,7 +13,7 @@ def counter_zero_ops():
     return torch.DoubleTensor([int(0)])
 
 
-def counter_conv(bias, kernel_size, output_size,in_channel,group):
+def counter_conv(bias, kernel_size, output_size, in_channel, group):
     """inputs are all numbers!"""
     return torch.DoubleTensor([output_size * (in_channel / group * kernel_size + bias)])
 

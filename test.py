@@ -1,8 +1,8 @@
 import torch
 import thop
 import torchvision
-dummy_input = torch.randn(10, 3, 224, 224)
-model = torchvision.models.alexnet(pretrained=True)
+dummy_input = torch.randn(1, 3, 224, 224)
+model = torchvision.models.mnasnet1_3()
 
-flops = thop.profile(model, inputs=(dummy_input,), verbose=True)
-print(flops)
+flops,params = thop.profile(model, inputs=(dummy_input,), verbose=True)
+print(flops,params)

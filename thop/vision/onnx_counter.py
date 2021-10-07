@@ -23,22 +23,23 @@ def onnx_counter_add(diction, node):
         out_size = diction[node.input[0]]
     output_name = node.output[0]
     macs = counter_zero_ops()
+    # if '140' in diction:
+    #     print(diction['140'],output_name)
     return macs, out_size, output_name
 
 
 def onnx_counter_conv(diction, node):
-    #print(node)
+    # print(node)
     # bias,kernelsize,outputsize
     dim_bias = 0
-    input_count=0
+    input_count = 0
     for i in node.input:
-        input_count+=1
+        input_count += 1
     if (input_count == 3):
         dim_bias = 1
         dim_weight = diction[node.input[1]]
     else:
         dim_weight = diction[node.input[1]]
-    
     for attr in node.attribute:
         # print(attr)
         if(attr.name == 'kernel_shape'):
@@ -55,7 +56,7 @@ def onnx_counter_conv(diction, node):
     dim_input = diction[node.input[0]]
     output_size = np.append(
         dim_input[0:-np.array(dim_kernel).size-1], dim_weight[0])
-    hw = dim_input[-np.array(dim_kernel).size:]
+    hw = np.array(dim_input[-np.array(dim_kernel).size:])
     for i in range(hw.size):
         hw[i] = int((hw[i]+2*dim_pad[i]-dim_dil[i] *
                      (dim_kernel[i]-1)-1)/dim_stride[i]+1)
@@ -63,10 +64,14 @@ def onnx_counter_conv(diction, node):
     macs = counter_conv(dim_bias, np.prod(dim_kernel),
                         np.prod(output_size), dim_weight[1], group)
     output_name = node.output[0]
+
+    # if '140' in diction:
+    #     print("conv",diction['140'],output_name)
     return macs, output_size, output_name
 
 
 def onnx_counter_constant(diction, node):
+    # print("constant",node)
     macs = counter_zero_ops()
     output_name = node.output[0]
     output_size = [1]
@@ -99,14 +104,27 @@ def onnx_counter_relu(diction, node):
     output_name = node.output[0]
     output_size = input_size
     #print(macs, output_size, output_name)
+    # if '140' in diction:
+    #     print("relu",diction['140'],output_name)
     return macs, output_size, output_name
 
 
 def onnx_counter_reducemean(diction, node):
+    keep_dim = 0
+    for attr in node.attribute:
+        if('axes' in attr.name):
+            dim_axis = np.array(attr.ints)
+        elif('keepdims' in attr.name):
+            keep_dim = attr.i
+
     input_size = diction[node.input[0]]
     macs = counter_zero_ops()
     output_name = node.output[0]
-    output_size = input_size
+    if (keep_dim == 1):
+        output_size = input_size
+    else:
+        output_size = np.delete(input_size, dim_axis)
+    #output_size = input_size
     return macs, output_size, output_name
 
 
@@ -168,11 +186,13 @@ def onnx_counter_softmax(diction, node):
 
 
 def onnx_counter_pad(diction, node):
-    # TODO add constant name and output real vector
-    if np.array(diction[node.input[1]]).size >= np.array(diction[node.input[0]]).size:
-        input_size = diction[node.input[1]]
-    else:
-        input_size = diction[node.input[0]]
+    # # TODO add constant name and output real vector
+    # if
+    # if (np.array(diction[node.input[1]]).size >= np.array(diction[node.input[0]]).size):
+    #     input_size = diction[node.input[1]]
+    # else:
+    #     input_size = diction[node.input[0]]
+    input_size = diction[node.input[0]]
     macs = counter_zero_ops()
     output_name = node.output[0]
     output_size = input_size
@@ -263,13 +283,37 @@ def onnx_counter_maxpool(diction, node):
     #print(macs, output_size, output_name)
     return macs, output_size, output_name
 
-def onnx_counter_globalaveragepool(diction,node):
+
+def onnx_counter_globalaveragepool(diction, node):
     macs = counter_zero_ops()
     output_name = node.output[0]
     input_size = diction[node.input[0]]
     output_size = input_size
     return macs, output_size, output_name
-    pass
+
+
+def onnx_counter_concat(diction, node):
+    # print(node)
+    # print(diction[node.input[0]])
+    axis = node.attribute[0].i
+    input_size = diction[node.input[0]]
+    for i in node.input:
+        dim_concat = diction[i][axis]
+    output_size = input_size
+    output_size[axis] = dim_concat
+    output_name = node.output[0]
+    macs = counter_zero_ops()
+    return macs, output_size, output_name
+
+
+def onnx_counter_clip(diction, node):
+    macs = counter_zero_ops()
+    output_name = node.output[0]
+    input_size = diction[node.input[0]]
+    output_size = input_size
+    return macs, output_size, output_name
+
+
 onnx_operators = {
     'MatMul': onnx_counter_matmul,
     'Add': onnx_counter_add,
@@ -290,6 +334,8 @@ onnx_operators = {
     'MaxPool': onnx_counter_maxpool,
     'Flatten': onnx_counter_flatten,
     'Gemm': onnx_counter_gemm,
-    'GlobalAveragePool' : onnx_counter_globalaveragepool,
+    'GlobalAveragePool': onnx_counter_globalaveragepool,
+    'Concat': onnx_counter_concat,
+    'Clip': onnx_counter_clip,
     None: None,
 }

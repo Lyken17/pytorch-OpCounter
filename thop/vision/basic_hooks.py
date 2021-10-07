@@ -26,7 +26,8 @@ def count_convNd(m: _ConvNd, x: (torch.Tensor,), y: torch.Tensor):
     bias_ops = 1 if m.bias is not None else 0
 
     # N x Cout x H x W x  (Cin x Kw x Kh + bias)
-    m.total_ops += counter_conv(bias_ops,torch.zeros(m.weight.size()[2:]).numel(),y.nelement(),m.in_channels,m.groups)
+    m.total_ops += counter_conv(bias_ops, torch.zeros(m.weight.size()
+                                [2:]).numel(), y.nelement(), m.in_channels, m.groups)
 
 
 def count_convNd_ver2(m: _ConvNd, x: (torch.Tensor,), y: torch.Tensor):

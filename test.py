@@ -4,5 +4,7 @@ import thop
 m = torch.nn.Conv2d(128, 128, 1)
 x = torch.randn(1, 128, 16, 16)
 
-flops,params = thop.profile(m, inputs=(x,), verbose=True)
-print(flops,params)
+
+flops = thop.profile(m, inputs=(x,), verbose=True)
+fprint(flops)
+

@@ -65,6 +65,7 @@ def counter_linear(in_feature, num_elements):
 
 
 def counter_matmul(input_size, output_size):
+    """an error to be fixed"""
     input_size = np.array(input_size)
     output_size = np.array(output_size)
     return np.prod(input_size) * output_size[-1]
@@ -84,3 +85,21 @@ def counter_sqrt(input_size):
 
 def counter_div(input_size):
     return input_size
+
+# jit profile
+
+
+def counter_addmm(input_size1, input_size2):
+    n, m = input_size1
+    m, p = input_size2
+    return n * m * p
+
+
+def counter_addmv(input_size):
+    n, m = input_size
+    return n * m
+
+def counter_bmm(input_size1,input_size2):
+    b, n, m = input_size1
+    b, m, p = input_size2
+    return b * m * n * p

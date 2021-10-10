@@ -1,25 +1,27 @@
 import numpy as np
 __all__ = ['handlers']
-from thop.vision.counter import counter_mul
+from thop.vision.counter import counter_mul, counter_addmm,\
+    counter_addmv,counter_bmm,counter_matmul
+
 
 def addmm(node):
     # [n, p] = aten::addmm([n, p], [n, m], [m, p], *, *)
     n, m = node.inputs[1].shape
     m, p = node.inputs[2].shape
-    return n * m * p
+
+    return counter_addmm(node.inputs[1].shape, node.inputs[2].shape)
 
 
 def addmv(node):
     # [n] = aten::addmv([n], [n, m], [m], *, *)
-    n, m = node.inputs[1].shape
-    return n * m
+    return counter_addmv(node.inputs[1].shape)
 
 
 def bmm(node):
     # [b, n, p] = aten::bmm([b, n, m], [b, m, p])
     b, n, m = node.inputs[0].shape
     b, m, p = node.inputs[1].shape
-    return b * n * m * p
+    return counter_bmm(node.inputs[0].shape,node.inputs[1].shape)
 
 
 def matmul(node):
@@ -29,25 +31,29 @@ def matmul(node):
         return counter_mul(n)
     elif node.inputs[0].ndim == 1 and node.inputs[1].ndim == 2:
         # [m] = aten::matmul([n], [n, m])
-        n, m = node.inputs[1].shape
-        return n * m
+        # n, m = node.inputs[1].shape
+        # return n * m
+        return counter_mul(np.prod(node.inputs[1].shape))
     elif node.inputs[0].ndim == 2 and node.inputs[1].ndim == 1:
         # [n] = aten::matmul([n, m], [m])
-        n, m = node.inputs[0].shape
-        return n * m
+        # n, m = node.inputs[0].shape
+        # return n * m
+        return counter_mul(np.prod(node.inputs[0].shape))
     elif node.inputs[0].ndim == 2 and node.inputs[1].ndim == 2:
         # [n, p] = aten::matmul([n, m], [m, p])
-        n, m = node.inputs[0].shape
-        m, p = node.inputs[1].shape
-        return n * m * p
+        # n, m = node.inputs[0].shape
+        # m, p = node.inputs[1].shape
+        # return n * m * p
+        return counter_matmul(node.inputs[0].shape,node.inputs[1].shape)
     elif node.inputs[0].ndim == 1:
         # [..., m] = aten::matmul([n], [..., n, m])
-        *b, n, m = node.inputs[1].shape
-        return np.prod(b) * n * m
+        # *b, n, m = node.inputs[1].shape
+        # return np.prod(b) * n * m
+        return counter_mul(np.prod(node.inputs[1].shape))
     elif node.inputs[1].ndim == 1:
-        # [..., n] = aten::matmul([..., n, m], [m])
-        *b, n, m = node.inputs[0].shape
-        return np.prod(b) * n * m
+        # # [..., n] = aten::matmul([..., n, m], [m])
+        # *b, n, m = node.inputs[0].shape
+        return counter_mul(np.prod(node.inputs[0].shape))
     else:
         # [..., n, p] = aten::matmul([..., n, m], [..., m, p])
         *b, n, p = node.outputs[0].shape
@@ -67,7 +73,7 @@ def convolution(node):
     else:
         ic, oc, *ks = node.inputs[1].shape
     os = node.outputs[0].shape
-    return np.prod(os) * ic * math.prod(ks)
+    return np.prod(os) * ic * np.prod(ks)
 
 
 def norm(node):

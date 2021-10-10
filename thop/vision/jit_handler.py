@@ -1,7 +1,8 @@
 import numpy as np
 __all__ = ['handlers']
 from thop.vision.counter import counter_mul, counter_addmm,\
-    counter_addmv,counter_bmm,counter_matmul
+    counter_addmv,counter_bmm,counter_matmul,counter_avgpool,\
+    counter_relu
 
 
 def addmm(node):
@@ -56,15 +57,16 @@ def matmul(node):
         return counter_mul(np.prod(node.inputs[0].shape))
     else:
         # [..., n, p] = aten::matmul([..., n, m], [..., m, p])
-        *b, n, p = node.outputs[0].shape
-        *_, n, m = node.inputs[0].shape
-        *_, m, p = node.inputs[1].shape
-        return np.prod(b) * n * m * p
+        # *b, n, p = node.outputs[0].shape
+        # *_, n, m = node.inputs[0].shape
+        # *_, m, p = node.inputs[1].shape
+        
+        # return np.prod(b) * n * m * p
+        return counter_matmul(node.outputs[0].shape,node.inputs[1].shape[-2:])
 
 
 def mul(node):
-    os = node.outputs[0].shape
-    return np.prod(os)
+    return counter_mul(np.prod(node.outputs[0].shape))
 
 
 def convolution(node):
@@ -89,13 +91,14 @@ def norm(node):
 
 
 def avg_pool_or_mean(node):
+    print("good")
     os = node.outputs[0].shape
-    return np.prod(os)
+    #return np.prod(os)
+    return counter_avgpool(np.prod(node.outputs[0].shape))
 
 
 def leaky_relu(node):
-    os = node.outputs[0].shape
-    return np.prod(os)
+    return counter_relu(np.prod(node.outputs[0].shape))
 
 
 def upsample_bilinear2d(node):

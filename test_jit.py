@@ -1,5 +1,5 @@
 import torch
-from torchvision.models import resnet18
+from torchvision.models import resnet18,vgg11
 from torchprofile import profile_macs
 import torch.nn as nn
 from thop import JitProfile
@@ -18,6 +18,6 @@ linear = model1()
 linear_jit = torch.jit.script(linear)
 linear_trace = torch.jit.trace(linear,input)
 #print(JitProfile.calculate_params(linear))
-model1 = resnet18()
+model1 = vgg11()
 input1 = torch.rand(1,3,224,224)
 print(JitProfile.calculate_macs(model1,input1))

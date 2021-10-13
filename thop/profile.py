@@ -67,7 +67,7 @@ register_hooks = {
     nn.RNN: count_rnn,
     nn.GRU: count_gru,
     nn.LSTM: count_lstm,
-    nn.Transformer: count_Transformer,
+    nn.Transformer: count_transformer,
     nn.Sequential: zero_ops,
 }
 

@@ -198,7 +198,7 @@ def count_lstm(m: nn.LSTM, x, y):
     m.total_ops += torch.DoubleTensor([int(total_ops)])
 
 
-def count_Transformer(m: nn.Transformer, x, y):
+def count_transformer(m: nn.Transformer, x, y):
     total_ops = 0
     src, tgt = x
     if m.batch_first:
@@ -218,7 +218,7 @@ def count_Transformer(m: nn.Transformer, x, y):
     forward = m.encoder.layers[0].linear1.out_features
     total_ops = 0
 
-    def MultiheadAttention(bool1, num_head, num_steps, target, sequence, embedding):
+    def multihead_attention(bool1, num_head, num_steps, target, sequence, embedding):
         if bool1 == 0:
             # linear_q,linear_k,linear_v all N,S,E
             total_multi = 3 * sequence * embedding ** 2
@@ -249,9 +249,9 @@ def count_Transformer(m: nn.Transformer, x, y):
         total_multi *= num_steps
         return total_multi
 
-    def TransformerEncoderLayer(num_head, num_steps, target, sequence, embedding):
+    def transformer_encoder_layer(num_head, num_steps, target, sequence, embedding):
         total_en = 0
-        total_en += MultiheadAttention(0, num_head,
+        total_en += multihead_attention(0, num_head,
                                        num_steps, target, sequence, embedding)
         # fed_forward(2 conv1d)
         total_en += num_steps * sequence * forward * embedding
@@ -260,11 +260,11 @@ def count_Transformer(m: nn.Transformer, x, y):
         total_en += 2 * num_steps * embedding * sequence
         return total_en
 
-    def TransformerDecoderLayer(num_head, num_steps, target, sequence, embedding):
+    def transformer_decoder_layer(num_head, num_steps, target, sequence, embedding):
         total_de = 0
-        total_de += MultiheadAttention(1, num_head,
+        total_de += multihead_attention(1, num_head,
                                        num_steps, target, sequence, embedding)
-        total_de += MultiheadAttention(2, num_head,
+        total_de += multihead_attention(2, num_head,
                                        num_steps, target, sequence, embedding)
         # linear1 linear2 fft
         total_de += num_steps * target * forward * embedding
@@ -272,8 +272,8 @@ def count_Transformer(m: nn.Transformer, x, y):
         # layernorm
         total_de += 2 * num_steps * embedding * target
         return total_de
-    total_ops = encoder_layers * TransformerEncoderLayer(num_head, num_steps, target, sequence, embedding) + \
+    total_ops = encoder_layers * transformer_encoder_layer(num_head, num_steps, target, sequence, embedding) + \
         decoder_layers * \
-        TransformerDecoderLayer(num_head, num_steps,
+        transformer_decoder_layer(num_head, num_steps,
                                 target, sequence, embedding)
     m.total_ops += torch.DoubleTensor([int(total_ops)])

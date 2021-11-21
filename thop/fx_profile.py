@@ -15,28 +15,72 @@ def count_mul(input_shapes, output_shapes):
     # element-wise
     return output_shapes[0].numel()
 
-def count_nn_linear(input_shapes, output_shapes):
+def count_matmul(input_shapes, output_shapes):
     in_shape = input_shapes[0]
     out_shape = output_shapes[0]
     in_features = in_shape[-1]
     num_elements  = out_shape.numel()
     return in_features * num_elements
 
+def count_fn_linear(input_shapes, output_shapes,  *args, **kwargs):
+    mul_flops = count_matmul(input_shapes, output_shapes)
+    if "bias" in kwargs:
+        add_flops = output_shapes[0].numel()
+    return mul_flops
+
+from .vision.counter import counter_conv
+
+def count_fn_conv2d(input_shapes, output_shapes, *args, **kwargs):
+    inputs, weight, bias, stride, padding, dilation, groups = args
+    if len(input_shapes) == 2:
+        x_shape, k_shape = input_shapes
+    elif len(input_shapes) == 3:
+        x_shape, k_shape, b_shape = input_shapes
+    out_shape = output_shapes[0]
+
+    kernel_parameters = k_shape[2:].numel()
+    bias_op = 0 # check it later
+    in_channel = x_shape[1]
+    
+    total_ops = counter_conv(bias_op, kernel_parameters, out_shape.numel(), in_channel, groups).item()
+    return int(total_ops)
+   
+
+def count_nn_linear(module:nn.Module, input_shapes, output_shapes):
+    return count_matmul(input_shape, output_shapes)
+
+def count_nn_conv2d(module:nn.Conv2d, input_shapes, output_shapes):
+    bias_op = 1 if module.bias is not None else 0
+    out_shape = output_shapes[0]
+    
+    in_channel = module.in_channels
+    groups = module.groups
+    kernel_ops = module.weight.shape[2:].numel()
+    total_ops = counter_conv(bias_op, kernel_ops, out_shape.numel(), in_channel, groups).item()
+    return int(total_ops)
+
+
 count_map = {
     nn.Linear: count_nn_linear,
+    nn.Conv2d: count_nn_conv2d, 
+    "function linear": count_fn_linear,
+    "built-in method conv2d of type object": count_fn_conv2d, 
     "clamp": count_clamp,
     "<built-in function mul>": count_mul,
     "<built-in function truediv>": count_mul,
 }
 
+missing_maps = {}
+
 from torch.fx import symbolic_trace
 from torch.fx.passes.shape_prop import ShapeProp
+from .utils import prGreen, prRed, prYellow
 
 def null_print(*args, **kwargs):
     return
 
-def fx_profile(m: nn.Module, input: th.Tensor, verbose=True):
-    gm : torch.fx.GraphModule = symbolic_trace(m)
+def fx_profile(mod: nn.Module, input: th.Tensor, verbose=False):
+    gm : torch.fx.GraphModule = symbolic_trace(mod)
     g = gm.graph
     ShapeProp(gm).propagate(input)
 
@@ -69,34 +113,43 @@ def fx_profile(m: nn.Module, input: th.Tensor, verbose=True):
             node_flops = 0
         elif node.op == "call_function":
             # torch internal functions
-            if str(node.target) in count_map:
-                node_flops = count_map[str(node.target)](input_shapes, output_shapes)
-            pass
+            key = str(node.target).split("at")[0].replace("<", "").replace(">", "").strip()
+            fprint(key in count_map) 
+            fprint("|", str(node.target), "|", key, "|")
+            fprint(count_map.keys())
+            if key in count_map:
+                node_flops = count_map[key](input_shapes, output_shapes, *node.args, **node.kwargs)
+            else:
+                missing_maps[key] = (node.op, key)
         elif node.op == "call_method":
             # torch internal functions
             # fprint(str(node.target) in count_map, str(node.target), count_map.keys())
             if str(node.target) in count_map:
                 node_flops = count_map[str(node.target)](input_shapes, output_shapes)
+            else:
+                missing_maps[key] = (node.op, key)
         elif node.op == "call_module":
             # torch.nn modules
-            m = getattr(net, node.target, None)
+            m = getattr(mod, node.target, None)
             fprint(type(m), type(m) in count_map)
             if type(m) in count_map:
-                node_flops = count_map[type(m)](input_shapes, output_shapes)
+                node_flops = count_map[type(m)](m, input_shapes, output_shapes)
+            else:
+                missing_maps[key] = (node.op, key)
             if node_op_type not in ["relu", "maxpool", "avgpool"]:
-                fprint(f"weight_shape: {net.state_dict()[node.target + '.weight'].shape}")
+                fprint(f"weight_shape: {mod.state_dict()[node.target + '.weight'].shape}")
             else:
                 fprint(f"weight_shape: None")
         
         v_maps[str(node.name)] =  node.meta['tensor_meta'].shape
-
-        fprint(f"NodeFlops: {node_flops}")
         if node_flops is not None:
             total_flops += node_flops
-        fprint("==" * 20)
+        prYellow(f"Current node's FLOPs: {node_flops}, total FLOPs: {total_flops}")
+        fprint("==" * 40)
+    from pprint import pprint
+    print("Missing operators:",)
+    pprint(missing_maps)
     return total_flops
-
-
 
 
 if __name__ == '__main__':
@@ -120,4 +173,3 @@ if __name__ == '__main__':
     data = th.randn(20, 5)
     flops = fx_profile(net, data, verbose=False)
     print(flops)
-    

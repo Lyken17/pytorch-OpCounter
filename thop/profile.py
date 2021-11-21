@@ -6,18 +6,12 @@ from thop.rnn_hooks import *
 
 # logger = logging.getLogger(__name__)
 # logger.setLevel(logging.INFO)
-def prRed(skk): print("\033[91m{}\033[00m".format(skk))
 
-
-def prGreen(skk): print("\033[92m{}\033[00m".format(skk))
-
-
-def prYellow(skk): print("\033[93m{}\033[00m".format(skk))
-
+from .utils import prGreen, prRed, prYellow
 
 if LooseVersion(torch.__version__) < LooseVersion("1.0.0"):
     logging.warning(
-        "You are using an old version PyTorch {version}, which THOP is not going to support in the future.".format(
+        "You are using an old version PyTorch {version}, which THOP does NOT support.".format(
             version=torch.__version__))
 
 default_dtype = torch.float64

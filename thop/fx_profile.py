@@ -206,9 +206,7 @@ def fx_profile(mod: nn.Module, input: th.Tensor, verbose=False):
         fprint("==" * 40)
     from pprint import pprint
 
-    print(
-        "Missing operators:",
-    )
+    print("Missing operators: ")
     pprint(missing_maps)
     return total_flops
 

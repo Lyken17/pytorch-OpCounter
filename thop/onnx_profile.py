@@ -7,7 +7,7 @@ from thop.vision.onnx_counter import onnx_operators
 
 
 class OnnxProfile:
-    def __init__(self) -> None:
+    def __init__(self):
         pass
 
     def calculate_params(self, model: onnx.ModelProto):

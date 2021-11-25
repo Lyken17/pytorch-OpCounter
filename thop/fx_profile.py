@@ -47,7 +47,10 @@ def count_fn_conv2d(input_shapes, output_shapes, *args, **kwargs):
    
 
 def count_nn_linear(module:nn.Module, input_shapes, output_shapes):
-    return count_matmul(input_shape, output_shapes)
+    return count_matmul(input_shapes, output_shapes)
+
+def count_zero_ops(module:nn.Module, input_shapes, output_shapes, *args, **kwargs):
+    return 0
 
 def count_nn_conv2d(module:nn.Conv2d, input_shapes, output_shapes):
     bias_op = 1 if module.bias is not None else 0
@@ -60,15 +63,38 @@ def count_nn_conv2d(module:nn.Conv2d, input_shapes, output_shapes):
     return int(total_ops)
 
 
+def count_nn_bn2d(module:nn.BatchNorm2d, input_shapes, output_shapes):
+    assert len(output_shapes) == 1, "nn.BatchNorm2d should only have one output"
+    y = output_shapes[0]
+    # y = (x - mean) / \sqrt{var + e} * weight + bias 
+    total_ops = 2 * y.numel()
+    return total_ops
+
+
+zero_ops = (
+    nn.ReLU, 
+    nn.ReLU6,
+    nn.Dropout,
+    nn.MaxPool2d, 
+    nn.AvgPool2d, 
+    nn.AdaptiveAvgPool2d
+)
+
 count_map = {
     nn.Linear: count_nn_linear,
     nn.Conv2d: count_nn_conv2d, 
+    nn.BatchNorm2d: count_nn_bn2d,
     "function linear": count_fn_linear,
-    "built-in method conv2d of type object": count_fn_conv2d, 
     "clamp": count_clamp,
-    "<built-in function mul>": count_mul,
-    "<built-in function truediv>": count_mul,
+    "built-in function add": count_zero_ops,
+    "built-in method fl": count_zero_ops,
+    "built-in method conv2d of type object": count_fn_conv2d, 
+    "built-in function mul": count_mul,
+    "built-in function truediv": count_mul,
 }
+
+for k in zero_ops:
+    count_map[k] = count_zero_ops
 
 missing_maps = {}
 
@@ -94,7 +120,7 @@ def fx_profile(mod: nn.Module, input: th.Tensor, verbose=False):
     for node in gm.graph.nodes:
         # print(f"{node.target},\t{node.op},\t{node.meta['tensor_meta'].dtype},\t{node.meta['tensor_meta'].shape}")
         fprint(f"NodeOP:{node.op},\tTarget:{node.target},\tNodeName:{node.name},\tNodeArgs:{node.args}")
-        node_op_type = str(node.target).split(".")[-1]
+        # node_op_type = str(node.target).split(".")[-1]
         node_flops = None
         
         input_shapes = [] 
@@ -114,32 +140,37 @@ def fx_profile(mod: nn.Module, input: th.Tensor, verbose=False):
         elif node.op == "call_function":
             # torch internal functions
             key = str(node.target).split("at")[0].replace("<", "").replace(">", "").strip()
-            fprint(key in count_map) 
-            fprint("|", str(node.target), "|", key, "|")
-            fprint(count_map.keys())
             if key in count_map:
                 node_flops = count_map[key](input_shapes, output_shapes, *node.args, **node.kwargs)
             else:
                 missing_maps[key] = (node.op, key)
+                prRed(f"|{key}| is missing")
         elif node.op == "call_method":
             # torch internal functions
             # fprint(str(node.target) in count_map, str(node.target), count_map.keys())
-            if str(node.target) in count_map:
-                node_flops = count_map[str(node.target)](input_shapes, output_shapes)
+            key = str(node.target)
+            if key in count_map:
+                node_flops = count_map[key](input_shapes, output_shapes)
             else:
                 missing_maps[key] = (node.op, key)
+                prRed(f"{key} is missing")
         elif node.op == "call_module":
             # torch.nn modules
-            m = getattr(mod, node.target, None)
+            # m = getattr(mod, node.target, None)
+            m = mod.get_submodule(node.target)
+            key = type(m)
             fprint(type(m), type(m) in count_map)
             if type(m) in count_map:
                 node_flops = count_map[type(m)](m, input_shapes, output_shapes)
             else:
-                missing_maps[key] = (node.op, key)
-            if node_op_type not in ["relu", "maxpool", "avgpool"]:
-                fprint(f"weight_shape: {mod.state_dict()[node.target + '.weight'].shape}")
+                missing_maps[key] = (node.op, )
+                prRed(f"{key} is missing")
+            print("module type:", type(m))
+            if isinstance(m, zero_ops):
+                print(f"weight_shape: None")
             else:
-                fprint(f"weight_shape: None")
+                print(type(m))
+                print(f"weight_shape: {mod.state_dict()[node.target + '.weight'].shape}")
         
         v_maps[str(node.name)] =  node.meta['tensor_meta'].shape
         if node_flops is not None:

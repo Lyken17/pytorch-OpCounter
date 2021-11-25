@@ -2,9 +2,18 @@ import torch
 import numpy as np
 from onnx import numpy_helper
 from thop.vision.basic_hooks import zero_ops
-from .counter import counter_matmul, counter_zero_ops,\
-    counter_conv, counter_mul, counter_norm, counter_pow,\
-    counter_sqrt, counter_div, counter_softmax, counter_avgpool
+from .counter import (
+    counter_matmul,
+    counter_zero_ops,
+    counter_conv,
+    counter_mul,
+    counter_norm,
+    counter_pow,
+    counter_sqrt,
+    counter_div,
+    counter_softmax,
+    counter_avgpool,
+)
 
 
 def onnx_counter_matmul(diction, node):
@@ -37,34 +46,39 @@ def onnx_counter_conv(diction, node):
     input_count = 0
     for i in node.input:
         input_count += 1
-    if (input_count == 3):
+    if input_count == 3:
         dim_bias = 1
         dim_weight = diction[node.input[1]]
     else:
         dim_weight = diction[node.input[1]]
     for attr in node.attribute:
         # print(attr)
-        if(attr.name == 'kernel_shape'):
+        if attr.name == "kernel_shape":
             dim_kernel = attr.ints  # kw,kh
-        if(attr.name == 'strides'):
+        if attr.name == "strides":
             dim_stride = attr.ints
-        if(attr.name == 'pads'):
+        if attr.name == "pads":
             dim_pad = attr.ints
-        if(attr.name == 'dilations'):
+        if attr.name == "dilations":
             dim_dil = attr.ints
-        if(attr.name == 'group'):
+        if attr.name == "group":
             group = attr.i
             # print(dim_dil)
     dim_input = diction[node.input[0]]
     output_size = np.append(
-        dim_input[0:-np.array(dim_kernel).size-1], dim_weight[0])
-    hw = np.array(dim_input[-np.array(dim_kernel).size:])
+        dim_input[0 : -np.array(dim_kernel).size - 1], dim_weight[0]
+    )
+    hw = np.array(dim_input[-np.array(dim_kernel).size :])
     for i in range(hw.size):
-        hw[i] = int((hw[i]+2*dim_pad[i]-dim_dil[i] *
-                     (dim_kernel[i]-1)-1)/dim_stride[i]+1)
+        hw[i] = int(
+            (hw[i] + 2 * dim_pad[i] - dim_dil[i] * (dim_kernel[i] - 1) - 1)
+            / dim_stride[i]
+            + 1
+        )
     output_size = np.append(output_size, hw)
-    macs = counter_conv(dim_bias, np.prod(dim_kernel),
-                        np.prod(output_size), dim_weight[1], group)
+    macs = counter_conv(
+        dim_bias, np.prod(dim_kernel), np.prod(output_size), dim_weight[1], group
+    )
     output_name = node.output[0]
 
     # if '140' in diction:
@@ -77,7 +91,7 @@ def onnx_counter_constant(diction, node):
     macs = counter_zero_ops()
     output_name = node.output[0]
     output_size = [1]
-    #print(macs, output_size, output_name)
+    # print(macs, output_size, output_name)
     return macs, output_size, output_name
 
 
@@ -105,7 +119,7 @@ def onnx_counter_relu(diction, node):
     macs = counter_zero_ops()
     output_name = node.output[0]
     output_size = input_size
-    #print(macs, output_size, output_name)
+    # print(macs, output_size, output_name)
     # if '140' in diction:
     #     print("relu",diction['140'],output_name)
     return macs, output_size, output_name
@@ -114,19 +128,19 @@ def onnx_counter_relu(diction, node):
 def onnx_counter_reducemean(diction, node):
     keep_dim = 0
     for attr in node.attribute:
-        if('axes' in attr.name):
+        if "axes" in attr.name:
             dim_axis = np.array(attr.ints)
-        elif('keepdims' in attr.name):
+        elif "keepdims" in attr.name:
             keep_dim = attr.i
 
     input_size = diction[node.input[0]]
     macs = counter_zero_ops()
     output_name = node.output[0]
-    if (keep_dim == 1):
+    if keep_dim == 1:
         output_size = input_size
     else:
         output_size = np.delete(input_size, dim_axis)
-    #output_size = input_size
+    # output_size = input_size
     return macs, output_size, output_name
 
 
@@ -208,26 +222,26 @@ def onnx_counter_averagepool(diction, node):
     dim_pad = None
     for attr in node.attribute:
         # print(attr)
-        if(attr.name == 'kernel_shape'):
+        if attr.name == "kernel_shape":
             dim_kernel = attr.ints  # kw,kh
-        elif(attr.name == 'strides'):
+        elif attr.name == "strides":
             dim_stride = attr.ints
-        elif(attr.name == 'pads'):
+        elif attr.name == "pads":
             dim_pad = attr.ints
-        elif(attr.name == 'dilations'):
+        elif attr.name == "dilations":
             dim_dil = attr.ints
             # print(dim_dil)
     dim_input = diction[node.input[0]]
-    hw = dim_input[-np.array(dim_kernel).size:]
+    hw = dim_input[-np.array(dim_kernel).size :]
     if dim_pad is not None:
         for i in range(hw.size):
-            hw[i] = int((hw[i]+2*dim_pad[i]-dim_kernel[i])/dim_stride[i]+1)
-        output_size = np.append(dim_input[0:-np.array(dim_kernel).size], hw)
+            hw[i] = int((hw[i] + 2 * dim_pad[i] - dim_kernel[i]) / dim_stride[i] + 1)
+        output_size = np.append(dim_input[0 : -np.array(dim_kernel).size], hw)
     else:
         for i in range(hw.size):
-            hw[i] = int((hw[i]-dim_kernel[i])/dim_stride[i]+1)
-        output_size = np.append(dim_input[0:-np.array(dim_kernel).size], hw)
-    #print(macs, output_size, output_name)
+            hw[i] = int((hw[i] - dim_kernel[i]) / dim_stride[i] + 1)
+        output_size = np.append(dim_input[0 : -np.array(dim_kernel).size], hw)
+    # print(macs, output_size, output_name)
     return macs, output_size, output_name
 
 
@@ -237,7 +251,7 @@ def onnx_counter_flatten(diction, node):
     output_name = node.output[0]
     axis = node.attribute[0].i
     input_size = diction[node.input[0]]
-    output_size = np.append(input_size[axis-1], np.prod(input_size[axis:]))
+    output_size = np.append(input_size[axis - 1], np.prod(input_size[axis:]))
     # print("flatten",output_size)
     return macs, output_size, output_name
 
@@ -263,26 +277,26 @@ def onnx_counter_maxpool(diction, node):
     dim_pad = None
     for attr in node.attribute:
         # print(attr)
-        if(attr.name == 'kernel_shape'):
+        if attr.name == "kernel_shape":
             dim_kernel = attr.ints  # kw,kh
-        elif(attr.name == 'strides'):
+        elif attr.name == "strides":
             dim_stride = attr.ints
-        elif(attr.name == 'pads'):
+        elif attr.name == "pads":
             dim_pad = attr.ints
-        elif(attr.name == 'dilations'):
+        elif attr.name == "dilations":
             dim_dil = attr.ints
             # print(dim_dil)
     dim_input = diction[node.input[0]]
-    hw = dim_input[-np.array(dim_kernel).size:]
+    hw = dim_input[-np.array(dim_kernel).size :]
     if dim_pad is not None:
         for i in range(hw.size):
-            hw[i] = int((hw[i]+2*dim_pad[i]-dim_kernel[i])/dim_stride[i]+1)
-        output_size = np.append(dim_input[0:-np.array(dim_kernel).size], hw)
+            hw[i] = int((hw[i] + 2 * dim_pad[i] - dim_kernel[i]) / dim_stride[i] + 1)
+        output_size = np.append(dim_input[0 : -np.array(dim_kernel).size], hw)
     else:
         for i in range(hw.size):
-            hw[i] = int((hw[i]-dim_kernel[i])/dim_stride[i]+1)
-        output_size = np.append(dim_input[0:-np.array(dim_kernel).size], hw)
-    #print(macs, output_size, output_name)
+            hw[i] = int((hw[i] - dim_kernel[i]) / dim_stride[i] + 1)
+        output_size = np.append(dim_input[0 : -np.array(dim_kernel).size], hw)
+    # print(macs, output_size, output_name)
     return macs, output_size, output_name
 
 
@@ -317,27 +331,27 @@ def onnx_counter_clip(diction, node):
 
 
 onnx_operators = {
-    'MatMul': onnx_counter_matmul,
-    'Add': onnx_counter_add,
-    'Conv': onnx_counter_conv,
-    'Mul': onnx_counter_mul,
-    'Constant': onnx_counter_constant,
-    'BatchNormalization': onnx_counter_bn,
-    'Relu': onnx_counter_relu,
-    'ReduceMean': onnx_counter_reducemean,
-    'Sub': onnx_counter_sub,
-    'Pow': onnx_counter_pow,
-    'Sqrt': onnx_counter_sqrt,
-    'Div': onnx_counter_div,
-    'InstanceNormalization': onnx_counter_instance,
-    'Softmax': onnx_counter_softmax,
-    'Pad': onnx_counter_pad,
-    'AveragePool': onnx_counter_averagepool,
-    'MaxPool': onnx_counter_maxpool,
-    'Flatten': onnx_counter_flatten,
-    'Gemm': onnx_counter_gemm,
-    'GlobalAveragePool': onnx_counter_globalaveragepool,
-    'Concat': onnx_counter_concat,
-    'Clip': onnx_counter_clip,
+    "MatMul": onnx_counter_matmul,
+    "Add": onnx_counter_add,
+    "Conv": onnx_counter_conv,
+    "Mul": onnx_counter_mul,
+    "Constant": onnx_counter_constant,
+    "BatchNormalization": onnx_counter_bn,
+    "Relu": onnx_counter_relu,
+    "ReduceMean": onnx_counter_reducemean,
+    "Sub": onnx_counter_sub,
+    "Pow": onnx_counter_pow,
+    "Sqrt": onnx_counter_sqrt,
+    "Div": onnx_counter_div,
+    "InstanceNormalization": onnx_counter_instance,
+    "Softmax": onnx_counter_softmax,
+    "Pad": onnx_counter_pad,
+    "AveragePool": onnx_counter_averagepool,
+    "MaxPool": onnx_counter_maxpool,
+    "Flatten": onnx_counter_flatten,
+    "Gemm": onnx_counter_gemm,
+    "GlobalAveragePool": onnx_counter_globalaveragepool,
+    "Concat": onnx_counter_concat,
+    "Clip": onnx_counter_clip,
     None: None,
 }

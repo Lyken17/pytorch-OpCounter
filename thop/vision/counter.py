@@ -54,9 +54,9 @@ def counter_upsample(mode: str, output_size):
     elif mode == "bicubic":
         ops_solve_A = 224  # 128 muls + 96 adds
         ops_solve_p = 35  # 16 muls + 12 adds + 4 muls + 3 adds
-        total_ops *= (ops_solve_A + ops_solve_p)
+        total_ops *= ops_solve_A + ops_solve_p
     elif mode == "trilinear":
-        total_ops *= (13 * 2 + 5)
+        total_ops *= 13 * 2 + 5
     return torch.DoubleTensor([int(total_ops)])
 
 

@@ -12,20 +12,20 @@ from .utils import prGreen, prRed, prYellow
 if LooseVersion(torch.__version__) < LooseVersion("1.0.0"):
     logging.warning(
         "You are using an old version PyTorch {version}, which THOP does NOT support.".format(
-            version=torch.__version__))
+            version=torch.__version__
+        )
+    )
 
 default_dtype = torch.float64
 
 register_hooks = {
     nn.ZeroPad2d: zero_ops,  # padding does not involve any multiplication.
-
     nn.Conv1d: count_convNd,
     nn.Conv2d: count_convNd,
     nn.Conv3d: count_convNd,
     nn.ConvTranspose1d: count_convNd,
     nn.ConvTranspose2d: count_convNd,
     nn.ConvTranspose3d: count_convNd,
-
     nn.BatchNorm1d: count_bn,
     nn.BatchNorm2d: count_bn,
     nn.BatchNorm3d: count_bn,
@@ -35,32 +35,26 @@ register_hooks = {
     nn.InstanceNorm3d: count_in,
     nn.PReLU: count_prelu,
     nn.Softmax: count_softmax,
-
     nn.ReLU: zero_ops,
     nn.ReLU6: zero_ops,
     nn.LeakyReLU: count_relu,
-
     nn.MaxPool1d: zero_ops,
     nn.MaxPool2d: zero_ops,
     nn.MaxPool3d: zero_ops,
     nn.AdaptiveMaxPool1d: zero_ops,
     nn.AdaptiveMaxPool2d: zero_ops,
     nn.AdaptiveMaxPool3d: zero_ops,
-
     nn.AvgPool1d: count_avgpool,
     nn.AvgPool2d: count_avgpool,
     nn.AvgPool3d: count_avgpool,
     nn.AdaptiveAvgPool1d: count_adap_avgpool,
     nn.AdaptiveAvgPool2d: count_adap_avgpool,
     nn.AdaptiveAvgPool3d: count_adap_avgpool,
-
     nn.Linear: count_linear,
     nn.Dropout: zero_ops,
-
     nn.Upsample: count_upsample,
     nn.UpsamplingBilinear2d: count_upsample,
     nn.UpsamplingNearest2d: count_upsample,
-
     nn.RNNCell: count_rnn_cell,
     nn.GRUCell: count_gru_cell,
     nn.LSTMCell: count_lstm_cell,
@@ -68,13 +62,11 @@ register_hooks = {
     nn.GRU: count_gru,
     nn.LSTM: count_lstm,
     nn.Sequential: zero_ops,
-
 }
 
 if LooseVersion(torch.__version__) >= LooseVersion("1.1.0"):
-    register_hooks.update({
-        nn.SyncBatchNorm: count_bn
-    })
+    register_hooks.update({nn.SyncBatchNorm: count_bn})
+
 
 def profile_origin(model, inputs, custom_ops=None, verbose=True, report_missing=False):
     handler_collection = []
@@ -89,11 +81,13 @@ def profile_origin(model, inputs, custom_ops=None, verbose=True, report_missing=
             return
 
         if hasattr(m, "total_ops") or hasattr(m, "total_params"):
-            logging.warning("Either .total_ops or .total_params is already defined in %s. "
-                            "Be careful, it might change your code's behavior." % str(m))
+            logging.warning(
+                "Either .total_ops or .total_params is already defined in %s. "
+                "Be careful, it might change your code's behavior." % str(m)
+            )
 
-        m.register_buffer('total_ops', torch.zeros(1, dtype=default_dtype))
-        m.register_buffer('total_params', torch.zeros(1, dtype=default_dtype))
+        m.register_buffer("total_ops", torch.zeros(1, dtype=default_dtype))
+        m.register_buffer("total_params", torch.zeros(1, dtype=default_dtype))
 
         for p in m.parameters():
             m.total_params += torch.DoubleTensor([p.numel()])
@@ -101,7 +95,9 @@ def profile_origin(model, inputs, custom_ops=None, verbose=True, report_missing=
         m_type = type(m)
 
         fn = None
-        if m_type in custom_ops:  # if defined both op maps, use custom_ops to overwrite.
+        if (
+            m_type in custom_ops
+        ):  # if defined both op maps, use custom_ops to overwrite.
             fn = custom_ops[m_type]
             if m_type not in types_collection and verbose:
                 print("[INFO] Customize rule %s() %s." % (fn.__qualname__, m_type))
@@ -111,7 +107,10 @@ def profile_origin(model, inputs, custom_ops=None, verbose=True, report_missing=
                 print("[INFO] Register %s() for %s." % (fn.__qualname__, m_type))
         else:
             if m_type not in types_collection and report_missing:
-                prRed("[WARN] Cannot find rule for %s. Treat it as zero Macs and zero Params." % m_type)
+                prRed(
+                    "[WARN] Cannot find rule for %s. Treat it as zero Macs and zero Params."
+                    % m_type
+                )
 
         if fn is not None:
             handler = m.register_forward_hook(fn)
@@ -154,7 +153,14 @@ def profile_origin(model, inputs, custom_ops=None, verbose=True, report_missing=
     return total_ops, total_params
 
 
-def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, ret_layer_info=False, report_missing=False):
+def profile(
+    model: nn.Module,
+    inputs,
+    custom_ops=None,
+    verbose=True,
+    ret_layer_info=False,
+    report_missing=False,
+):
     handler_collection = {}
     types_collection = set()
     if custom_ops is None:
@@ -164,8 +170,8 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, ret_layer_i
         verbose = True
 
     def add_hooks(m: nn.Module):
-        m.register_buffer('total_ops', torch.zeros(1, dtype=torch.float64))
-        m.register_buffer('total_params', torch.zeros(1, dtype=torch.float64))
+        m.register_buffer("total_ops", torch.zeros(1, dtype=torch.float64))
+        m.register_buffer("total_params", torch.zeros(1, dtype=torch.float64))
 
         # for p in m.parameters():
         #     m.total_params += torch.DoubleTensor([p.numel()])
@@ -173,7 +179,9 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, ret_layer_i
         m_type = type(m)
 
         fn = None
-        if m_type in custom_ops:  # if defined both op maps, use custom_ops to overwrite.
+        if (
+            m_type in custom_ops
+        ):  # if defined both op maps, use custom_ops to overwrite.
             fn = custom_ops[m_type]
             if m_type not in types_collection and verbose:
                 print("[INFO] Customize rule %s() %s." % (fn.__qualname__, m_type))
@@ -183,10 +191,16 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, ret_layer_i
                 print("[INFO] Register %s() for %s." % (fn.__qualname__, m_type))
         else:
             if m_type not in types_collection and report_missing:
-                prRed("[WARN] Cannot find rule for %s. Treat it as zero Macs and zero Params." % m_type)
+                prRed(
+                    "[WARN] Cannot find rule for %s. Treat it as zero Macs and zero Params."
+                    % m_type
+                )
 
         if fn is not None:
-            handler_collection[m] = (m.register_forward_hook(fn), m.register_forward_hook(count_parameters))
+            handler_collection[m] = (
+                m.register_forward_hook(fn),
+                m.register_forward_hook(count_parameters),
+            )
         types_collection.add(m_type)
 
     prev_training_status = model.training
@@ -206,7 +220,9 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, ret_layer_i
             # else:
             #     m_ops, m_params = m.total_ops, m.total_params
             next_dict = {}
-            if m in handler_collection and not isinstance(m, (nn.Sequential, nn.ModuleList)):
+            if m in handler_collection and not isinstance(
+                m, (nn.Sequential, nn.ModuleList)
+            ):
                 m_ops, m_params = m.total_ops.item(), m.total_params.item()
             else:
                 m_ops, m_params, next_dict = dfs_count(m, prefix=prefix + "\t")

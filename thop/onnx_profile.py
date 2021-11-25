@@ -6,7 +6,7 @@ import numpy as np
 from thop.vision.onnx_counter import onnx_operators
 
 
-class OnnxProfile():
+class OnnxProfile:
     def __init__(self) -> None:
         pass
 
@@ -28,25 +28,25 @@ class OnnxProfile():
         for w in weight:
             dim = np.array(w.dims)
             diction[str(w.name)] = dim
-            if (dim.size == 1):
+            if dim.size == 1:
                 diction[str(w.name)] = np.append(1, dim)
         for i in input:
             # print(i.type.tensor_type.shape.dim[0].dim_value)
             dim = np.array(i.type.tensor_type.shape.dim[0].dim_value)
             # print(i.type.tensor_type.shape.dim.__sizeof__())
-            #name2dims[str(i.name)] = [dim]
+            # name2dims[str(i.name)] = [dim]
             dim = []
             for key in i.type.tensor_type.shape.dim:
                 dim = np.append(dim, int(key.dim_value))
                 # print(key.dim_value)
             # print(dim)
             diction[str(i.name)] = dim
-            if(dim.size == 1):
+            if dim.size == 1:
                 diction[str(i.name)] = np.append(1, dim)
         for o in output:
             dim = np.array(o.type.tensor_type.shape.dim[0].dim_value)
             diction[str(o.name)] = [dim]
-            if(dim.size == 1):
+            if dim.size == 1:
                 diction[str(o.name)] = np.append(1, dim)
         return diction
 

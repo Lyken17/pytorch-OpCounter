@@ -1,8 +1,16 @@
 from collections.abc import Iterable
 
-def prRed(skk): print("\033[91m{}\033[00m".format(skk))
-def prGreen(skk): print("\033[92m{}\033[00m".format(skk))
-def prYellow(skk): print("\033[93m{}\033[00m".format(skk))
+
+def prRed(skk):
+    print("\033[91m{}\033[00m".format(skk))
+
+
+def prGreen(skk):
+    print("\033[92m{}\033[00m".format(skk))
+
+
+def prYellow(skk):
+    print("\033[93m{}\033[00m".format(skk))
 
 
 def clever_format(nums, format="%.2f"):
@@ -22,6 +30,6 @@ def clever_format(nums, format="%.2f"):
         else:
             clever_nums.append(format % num + "B")
 
-    clever_nums = clever_nums[0] if len(clever_nums) == 1 else (*clever_nums, )
+    clever_nums = clever_nums[0] if len(clever_nums) == 1 else (*clever_nums,)
 
     return clever_nums

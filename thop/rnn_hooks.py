@@ -109,8 +109,7 @@ def count_rnn(m: nn.RNN, x, y):
 
     for i in range(num_layers - 1):
         if m.bidirectional:
-            total_ops += _count_rnn_cell(hidden_size * 2, hidden_size,
-                                         bias) * 2
+            total_ops += _count_rnn_cell(hidden_size * 2, hidden_size, bias) * 2
         else:
             total_ops += _count_rnn_cell(hidden_size, hidden_size, bias)
 
@@ -147,8 +146,7 @@ def count_gru(m: nn.GRU, x, y):
 
     for i in range(num_layers - 1):
         if m.bidirectional:
-            total_ops += _count_gru_cell(hidden_size * 2, hidden_size,
-                                         bias) * 2
+            total_ops += _count_gru_cell(hidden_size * 2, hidden_size, bias) * 2
         else:
             total_ops += _count_gru_cell(hidden_size, hidden_size, bias)
 
@@ -185,8 +183,7 @@ def count_lstm(m: nn.LSTM, x, y):
 
     for i in range(num_layers - 1):
         if m.bidirectional:
-            total_ops += _count_lstm_cell(hidden_size * 2, hidden_size,
-                                          bias) * 2
+            total_ops += _count_lstm_cell(hidden_size * 2, hidden_size, bias) * 2
         else:
             total_ops += _count_lstm_cell(hidden_size, hidden_size, bias)
 

@@ -1,8 +1,17 @@
 import argparse
 import logging
-from .counter import counter_parameters, counter_conv, \
-    counter_norm, counter_relu, counter_softmax, counter_avgpool,\
-    counter_adap_avg, counter_zero_ops, counter_upsample, counter_linear
+from .counter import (
+    counter_parameters,
+    counter_conv,
+    counter_norm,
+    counter_relu,
+    counter_softmax,
+    counter_avgpool,
+    counter_adap_avg,
+    counter_zero_ops,
+    counter_upsample,
+    counter_linear,
+)
 import torch
 import torch.nn as nn
 from torch.nn.modules.conv import _ConvNd
@@ -28,8 +37,13 @@ def count_convNd(m: _ConvNd, x: (torch.Tensor,), y: torch.Tensor):
     bias_ops = 1 if m.bias is not None else 0
 
     # N x Cout x H x W x  (Cin x Kw x Kh + bias)
-    m.total_ops += counter_conv(bias_ops, torch.zeros(m.weight.size()
-                                [2:]).numel(), y.nelement(), m.in_channels, m.groups)
+    m.total_ops += counter_conv(
+        bias_ops,
+        torch.zeros(m.weight.size()[2:]).numel(),
+        y.nelement(),
+        m.in_channels,
+        m.groups,
+    )
 
 
 def count_convNd_ver2(m: _ConvNd, x: (torch.Tensor,), y: torch.Tensor):
@@ -44,8 +58,7 @@ def count_convNd_ver2(m: _ConvNd, x: (torch.Tensor,), y: torch.Tensor):
     #     kernel_ops += + m.bias.nelement()
     # # x N x H x W x Cout x (Cin x Kw x Kh + bias)
     # m.total_ops += torch.DoubleTensor([int(output_size * kernel_ops)])
-    m.total_ops += counter_conv(m.bias.nelement(),
-                                m.weight.nelement(), output_size)
+    m.total_ops += counter_conv(m.bias.nelement(), m.weight.nelement(), output_size)
 
 
 def count_bn(m, x, y):
@@ -85,7 +98,7 @@ def count_relu(m, x, y):
 def count_softmax(m, x, y):
     x = x[0]
     nfeatures = x.size()[m.dim]
-    batch_size = x.numel()//nfeatures
+    batch_size = x.numel() // nfeatures
 
     m.total_ops += counter_softmax(batch_size, nfeatures)
 
@@ -99,8 +112,9 @@ def count_avgpool(m, x, y):
 
 
 def count_adap_avgpool(m, x, y):
-    kernel = torch.DoubleTensor(
-        [*(x[0].shape[2:])]) // torch.DoubleTensor([*(y.shape[2:])])
+    kernel = torch.DoubleTensor([*(x[0].shape[2:])]) // torch.DoubleTensor(
+        [*(y.shape[2:])]
+    )
     total_add = torch.prod(kernel)
     num_elements = y.numel()
     m.total_ops += counter_adap_avg(total_add, num_elements)
@@ -108,9 +122,13 @@ def count_adap_avgpool(m, x, y):
 
 # TODO: verify the accuracy
 def count_upsample(m, x, y):
-    if m.mode not in ("nearest", "linear", "bilinear", "bicubic",):  # "trilinear"
-        logging.warning(
-            "mode %s is not implemented yet, take it a zero op" % m.mode)
+    if m.mode not in (
+        "nearest",
+        "linear",
+        "bilinear",
+        "bicubic",
+    ):  # "trilinear"
+        logging.warning("mode %s is not implemented yet, take it a zero op" % m.mode)
         return counter_zero_ops()
 
     if m.mode == "nearest":

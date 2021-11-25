@@ -204,10 +204,11 @@ def fx_profile(mod: nn.Module, input: th.Tensor, verbose=False):
             total_flops += node_flops
         prYellow(f"Current node's FLOPs: {node_flops}, total FLOPs: {total_flops}")
         fprint("==" * 40)
-    from pprint import pprint
 
-    print("Missing operators: ")
-    pprint(missing_maps)
+    if len(missing_maps.keys()) > 0:
+        from pprint import pprint
+        print("Missing operators: ")
+        pprint(missing_maps)
     return total_flops
 
 

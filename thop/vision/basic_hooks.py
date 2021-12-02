@@ -20,9 +20,6 @@ multiply_adds = 1
 
 
 def count_parameters(m, x, y):
-    total_params = 0
-    for p in m.parameters():
-        total_params += torch.DoubleTensor([p.numel()])
     m.total_params[0] = counter_parameters(m.parameters())
 
 

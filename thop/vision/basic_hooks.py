@@ -1,6 +1,7 @@
 import argparse
 import logging
 from .calc_func import (
+    calculate_conv_flops,
     calculate_parameters,
     calculate_conv,
     calculate_norm,
@@ -36,14 +37,21 @@ def count_convNd(m: _ConvNd, x, y: torch.Tensor):
     kernel_ops = torch.zeros(m.weight.size()[2:]).numel()  # Kw x Kh
     bias_ops = 1 if m.bias is not None else 0
 
-    # N x Cout x H x W x  (Cin x Kw x Kh + bias)
-    m.total_ops += calculate_conv(
-        bias_ops,
-        torch.zeros(m.weight.size()[2:]).numel(),
-        y.nelement(),
-        m.in_channels,
-        m.groups,
+    m.total_ops += calculate_conv_flops(
+        input_size = list(x.shape),
+        output_size = list(y.shape),
+        kernel_size = list(m.weight.shape),
+        groups = m.groups,
+        bias = m.bias
     )
+    # N x Cout x H x W x  (Cin x Kw x Kh + bias)
+    # m.total_ops += calculate_conv(
+    #     bias_ops,
+    #     torch.zeros(m.weight.size()[2:]).numel(),
+    #     y.nelement(),
+    #     m.in_channels,
+    #     m.groups,
+    # )
 
 
 def count_convNd_ver2(m: _ConvNd, x, y: torch.Tensor):

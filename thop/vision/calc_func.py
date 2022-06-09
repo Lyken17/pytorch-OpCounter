@@ -2,6 +2,19 @@ import torch
 import numpy as np
 
 
+def l_prod(in_list):
+    res = 1
+    for _ in in_list:
+        res *= _
+    return res
+
+def l_sum(in_list):
+    res = 0
+    for _ in in_list:
+        res += _
+    return res
+
+
 def calculate_parameters(param_list):
     total_params = 0
     for p in param_list:
@@ -11,6 +24,14 @@ def calculate_parameters(param_list):
 
 def calculate_zero_ops():
     return torch.DoubleTensor([int(0)])
+
+def calculate_conv_flops(input_size, output_size, kernel_size, groups, bias = False):
+    n, out_c, oh, ow = output_size
+    n, in_c, ih, iw = input_size
+    out_c, in_c, kh, kw = kernel_size
+    g = groups
+    return l_prod(output_size) * (in_c // g) * kh * kw
+    
 
 
 def calculate_conv(bias, kernel_size, output_size, in_channel, group):

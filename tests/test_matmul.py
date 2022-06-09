@@ -12,7 +12,6 @@ class TestUtils:
         print(flops, params)
         assert flops == n * in_c * out_c
 
-
     def test_matmul_case2(self):
         for i in range(10):
             n, in_c, out_c = torch.randint(1, 500, (3,)).tolist()

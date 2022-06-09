@@ -1,18 +1,6 @@
 import argparse
 import logging
-from .calc_func import (
-    calculate_conv_flops,
-    calculate_parameters,
-    calculate_conv,
-    calculate_norm,
-    calculate_relu,
-    calculate_softmax,
-    calculate_avgpool,
-    calculate_adaptive_avg,
-    calculate_zero_ops,
-    calculate_upsample,
-    calculate_linear,
-)
+from .calc_func import *
 import torch
 import torch.nn as nn
 from torch.nn.modules.conv import _ConvNd
@@ -37,7 +25,7 @@ def count_convNd(m: _ConvNd, x, y: torch.Tensor):
     kernel_ops = torch.zeros(m.weight.size()[2:]).numel()  # Kw x Kh
     bias_ops = 1 if m.bias is not None else 0
 
-    m.total_ops += calculate_conv_flops(
+    m.total_ops += calculate_conv2d_flops(
         input_size = list(x.shape),
         output_size = list(y.shape),
         kernel_size = list(m.weight.shape),
@@ -69,22 +57,26 @@ def count_convNd_ver2(m: _ConvNd, x, y: torch.Tensor):
     m.total_ops += calculate_conv(m.bias.nelement(), m.weight.nelement(), output_size)
 
 
-def count_batchnorm(m, x, y):
+def count_normalization(m: nn.modules.batchnorm._BatchNorm, x, y):
+    # TODO: add test cases
+    # https://github.com/Lyken17/pytorch-OpCounter/issues/124
+    # y = (x - mean) / sqrt(eps + var) * weight + bias
     x = x[0]
-    if not m.training:
-        m.total_ops += calculate_norm(x.numel())
+    # bn is by default fused in inference
+    flops = calculate_norm(x.numel())
+    if m.affine:
+        flops *= 2
+    m.total_ops += flops
 
 
-def count_layer_norm(m, x, y):
-    x = x[0]
-    if not m.training:
-        m.total_ops += calculate_norm(x.numel())
+# def count_layer_norm(m, x, y):
+#     x = x[0]
+#     m.total_ops += calculate_norm(x.numel())
 
 
-def count_instance_norm(m, x, y):
-    x = x[0]
-    if not m.training:
-        m.total_ops += calculate_norm(x.numel())
+# def count_instance_norm(m, x, y):
+#     x = x[0]
+#     m.total_ops += calculate_norm(x.numel())
 
 
 def count_prelu(m, x, y):
@@ -100,7 +92,7 @@ def count_relu(m, x, y):
 
     nelements = x.numel()
 
-    m.total_ops += calculate_relu(nelements)
+    m.total_ops += calculate_relu_flops(list(x.shape))
 
 
 def count_softmax(m, x, y):

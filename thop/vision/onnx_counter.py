@@ -2,17 +2,17 @@ import torch
 import numpy as np
 from onnx import numpy_helper
 from thop.vision.basic_hooks import zero_ops
-from .counter import (
+from .calc_func import (
     counter_matmul,
-    counter_zero_ops,
-    counter_conv,
+    calculate_zero_ops,
+    calculate_conv,
     counter_mul,
-    counter_norm,
+    calculate_norm,
     counter_pow,
     counter_sqrt,
     counter_div,
-    counter_softmax,
-    counter_avgpool,
+    calculate_softmax,
+    calculate_avgpool,
 )
 
 
@@ -33,7 +33,7 @@ def onnx_counter_add(diction, node):
     else:
         out_size = diction[node.input[0]]
     output_name = node.output[0]
-    macs = counter_zero_ops()
+    macs = calculate_zero_ops()
     # if '140' in diction:
     #     print(diction['140'],output_name)
     return macs, out_size, output_name
@@ -76,7 +76,7 @@ def onnx_counter_conv(diction, node):
             + 1
         )
     output_size = np.append(output_size, hw)
-    macs = counter_conv(
+    macs = calculate_conv(
         dim_bias, np.prod(dim_kernel), np.prod(output_size), dim_weight[1], group
     )
     output_name = node.output[0]
@@ -88,7 +88,7 @@ def onnx_counter_conv(diction, node):
 
 def onnx_counter_constant(diction, node):
     # print("constant",node)
-    macs = counter_zero_ops()
+    macs = calculate_zero_ops()
     output_name = node.output[0]
     output_size = [1]
     # print(macs, output_size, output_name)
@@ -108,7 +108,7 @@ def onnx_counter_mul(diction, node):
 
 def onnx_counter_bn(diction, node):
     input_size = diction[node.input[0]]
-    macs = counter_norm(np.prod(input_size))
+    macs = calculate_norm(np.prod(input_size))
     output_name = node.output[0]
     output_size = input_size
     return macs, output_size, output_name
@@ -116,7 +116,7 @@ def onnx_counter_bn(diction, node):
 
 def onnx_counter_relu(diction, node):
     input_size = diction[node.input[0]]
-    macs = counter_zero_ops()
+    macs = calculate_zero_ops()
     output_name = node.output[0]
     output_size = input_size
     # print(macs, output_size, output_name)
@@ -134,7 +134,7 @@ def onnx_counter_reducemean(diction, node):
             keep_dim = attr.i
 
     input_size = diction[node.input[0]]
-    macs = counter_zero_ops()
+    macs = calculate_zero_ops()
     output_name = node.output[0]
     if keep_dim == 1:
         output_size = input_size
@@ -146,7 +146,7 @@ def onnx_counter_reducemean(diction, node):
 
 def onnx_counter_sub(diction, node):
     input_size = diction[node.input[0]]
-    macs = counter_zero_ops()
+    macs = calculate_zero_ops()
     output_name = node.output[0]
     output_size = input_size
     return macs, output_size, output_name
@@ -184,7 +184,7 @@ def onnx_counter_div(diction, node):
 
 def onnx_counter_instance(diction, node):
     input_size = diction[node.input[0]]
-    macs = counter_norm(np.prod(input_size))
+    macs = calculate_norm(np.prod(input_size))
     output_name = node.output[0]
     output_size = input_size
     return macs, output_size, output_name
@@ -195,7 +195,7 @@ def onnx_counter_softmax(diction, node):
     dim = node.attribute[0].i
     nfeatures = input_size[dim]
     batch_size = np.prod(input_size) / nfeatures
-    macs = counter_softmax(nfeatures, batch_size)
+    macs = calculate_softmax(nfeatures, batch_size)
     output_name = node.output[0]
     output_size = input_size
     return macs, output_size, output_name
@@ -209,7 +209,7 @@ def onnx_counter_pad(diction, node):
     # else:
     #     input_size = diction[node.input[0]]
     input_size = diction[node.input[0]]
-    macs = counter_zero_ops()
+    macs = calculate_zero_ops()
     output_name = node.output[0]
     output_size = input_size
     return macs, output_size, output_name
@@ -217,7 +217,7 @@ def onnx_counter_pad(diction, node):
 
 def onnx_counter_averagepool(diction, node):
     # TODO add support of ceil_mode and floor
-    macs = counter_avgpool(np.prod(diction[node.input[0]]))
+    macs = calculate_avgpool(np.prod(diction[node.input[0]]))
     output_name = node.output[0]
     dim_pad = None
     for attr in node.attribute:
@@ -247,7 +247,7 @@ def onnx_counter_averagepool(diction, node):
 
 def onnx_counter_flatten(diction, node):
     # print(node)
-    macs = counter_zero_ops()
+    macs = calculate_zero_ops()
     output_name = node.output[0]
     axis = node.attribute[0].i
     input_size = diction[node.input[0]]
@@ -272,7 +272,7 @@ def onnx_counter_gemm(diction, node):
 def onnx_counter_maxpool(diction, node):
     # TODO add support of ceil_mode and floor
     # print(node)
-    macs = counter_zero_ops()
+    macs = calculate_zero_ops()
     output_name = node.output[0]
     dim_pad = None
     for attr in node.attribute:
@@ -301,7 +301,7 @@ def onnx_counter_maxpool(diction, node):
 
 
 def onnx_counter_globalaveragepool(diction, node):
-    macs = counter_zero_ops()
+    macs = calculate_zero_ops()
     output_name = node.output[0]
     input_size = diction[node.input[0]]
     output_size = input_size
@@ -318,12 +318,12 @@ def onnx_counter_concat(diction, node):
     output_size = input_size
     output_size[axis] = dim_concat
     output_name = node.output[0]
-    macs = counter_zero_ops()
+    macs = calculate_zero_ops()
     return macs, output_size, output_name
 
 
 def onnx_counter_clip(diction, node):
-    macs = counter_zero_ops()
+    macs = calculate_zero_ops()
     output_name = node.output[0]
     input_size = diction[node.input[0]]
     output_size = input_size

@@ -34,7 +34,7 @@ def count_fn_linear(input_shapes, output_shapes, *args, **kwargs):
     return mul_flops
 
 
-from .vision.counter import counter_conv
+from .vision.calc_func import calculate_conv
 
 
 def count_fn_conv2d(input_shapes, output_shapes, *args, **kwargs):
@@ -49,7 +49,7 @@ def count_fn_conv2d(input_shapes, output_shapes, *args, **kwargs):
     bias_op = 0  # check it later
     in_channel = x_shape[1]
 
-    total_ops = counter_conv(
+    total_ops = calculate_conv(
         bias_op, kernel_parameters, out_shape.numel(), in_channel, groups
     ).item()
     return int(total_ops)
@@ -70,7 +70,7 @@ def count_nn_conv2d(module: nn.Conv2d, input_shapes, output_shapes):
     in_channel = module.in_channels
     groups = module.groups
     kernel_ops = module.weight.shape[2:].numel()
-    total_ops = counter_conv(
+    total_ops = calculate_conv(
         bias_op, kernel_ops, out_shape.numel(), in_channel, groups
     ).item()
     return int(total_ops)

@@ -26,13 +26,13 @@ register_hooks = {
     nn.ConvTranspose1d: count_convNd,
     nn.ConvTranspose2d: count_convNd,
     nn.ConvTranspose3d: count_convNd,
-    nn.BatchNorm1d: count_bn,
-    nn.BatchNorm2d: count_bn,
-    nn.BatchNorm3d: count_bn,
-    nn.LayerNorm: count_ln,
-    nn.InstanceNorm1d: count_in,
-    nn.InstanceNorm2d: count_in,
-    nn.InstanceNorm3d: count_in,
+    nn.BatchNorm1d: count_batchnorm,
+    nn.BatchNorm2d: count_batchnorm,
+    nn.BatchNorm3d: count_batchnorm,
+    nn.LayerNorm: count_layer_norm,
+    nn.InstanceNorm1d: count_instance_norm,
+    nn.InstanceNorm2d: count_instance_norm,
+    nn.InstanceNorm3d: count_instance_norm,
     nn.PReLU: count_prelu,
     nn.Softmax: count_softmax,
     nn.ReLU: zero_ops,
@@ -65,7 +65,7 @@ register_hooks = {
 }
 
 if LooseVersion(torch.__version__) >= LooseVersion("1.1.0"):
-    register_hooks.update({nn.SyncBatchNorm: count_bn})
+    register_hooks.update({nn.SyncBatchNorm: count_batchnorm})
 
 
 def profile_origin(model, inputs, custom_ops=None, verbose=True, report_missing=False):

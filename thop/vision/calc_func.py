@@ -2,32 +2,32 @@ import torch
 import numpy as np
 
 
-def counter_parameters(para_list):
+def calculate_parameters(param_list):
     total_params = 0
-    for p in para_list:
+    for p in param_list:
         total_params += torch.DoubleTensor([p.nelement()])
     return total_params
 
 
-def counter_zero_ops():
+def calculate_zero_ops():
     return torch.DoubleTensor([int(0)])
 
 
-def counter_conv(bias, kernel_size, output_size, in_channel, group):
+def calculate_conv(bias, kernel_size, output_size, in_channel, group):
     """inputs are all numbers!"""
     return torch.DoubleTensor([output_size * (in_channel / group * kernel_size + bias)])
 
 
-def counter_norm(input_size):
+def calculate_norm(input_size):
     """input is a number not a array or tensor"""
     return torch.DoubleTensor([2 * input_size])
 
 
-def counter_relu(input_size: torch.Tensor):
+def calculate_relu(input_size: torch.Tensor):
     return torch.DoubleTensor([int(input_size)])
 
 
-def counter_softmax(batch_size, nfeatures):
+def calculate_softmax(batch_size, nfeatures):
     total_exp = nfeatures
     total_add = nfeatures - 1
     total_div = nfeatures
@@ -35,17 +35,17 @@ def counter_softmax(batch_size, nfeatures):
     return torch.DoubleTensor([int(total_ops)])
 
 
-def counter_avgpool(input_size):
+def calculate_avgpool(input_size):
     return torch.DoubleTensor([int(input_size)])
 
 
-def counter_adap_avg(kernel_size, output_size):
+def calculate_adaptive_avg(kernel_size, output_size):
     total_div = 1
     kernel_op = kernel_size + total_div
     return torch.DoubleTensor([int(kernel_op * output_size)])
 
 
-def counter_upsample(mode: str, output_size):
+def calculate_upsample(mode: str, output_size):
     total_ops = output_size
     if mode == "linear":
         total_ops *= 5
@@ -60,7 +60,7 @@ def counter_upsample(mode: str, output_size):
     return torch.DoubleTensor([int(total_ops)])
 
 
-def counter_linear(in_feature, num_elements):
+def calculate_linear(in_feature, num_elements):
     return torch.DoubleTensor([int(in_feature * num_elements)])
 
 

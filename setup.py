@@ -11,6 +11,7 @@ readme = open("README.md").read()
 VERSION = "0.0.5"
 
 requirements = [
+    "onnx",
     "torch",
 ]
 

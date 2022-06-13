@@ -8,7 +8,7 @@ from setuptools.command.install import install
 
 readme = open("README.md").read()
 
-VERSION = "0.0.5"
+VERSION = "0.1.0"
 
 requirements = [
     "torch",
@@ -25,7 +25,7 @@ setup(
     name="thop",
     version=VERSION,
     author="Ligeng Zhu",
-    author_email="lykensyu+github@gmail.com",
+    author_email="ligeng.zhu+github@gmail.com",
     url="https://github.com/Lyken17/pytorch-OpCounter/",
     description="A tool to count the FLOPs of PyTorch model.",
     long_description=readme,

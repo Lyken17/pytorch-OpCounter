@@ -112,8 +112,9 @@ def count_avgpool(m, x, y):
 
 
 def count_adap_avgpool(m, x, y):
-    kernel = torch.DoubleTensor([*(x[0].shape[2:])]) // torch.DoubleTensor(
-        [*(y.shape[2:])]
+    kernel = torch.div(
+        torch.DoubleTensor([*(x[0].shape[2:])]), 
+        torch.DoubleTensor([*(y.shape[2:])])
     )
     total_add = torch.prod(kernel)
     num_elements = y.numel()

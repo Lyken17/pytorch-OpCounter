@@ -62,6 +62,7 @@ register_hooks = {
     nn.GRU: count_gru,
     nn.LSTM: count_lstm,
     nn.Sequential: zero_ops,
+    nn.PixelShuffle: zero_ops,
 }
 
 if LooseVersion(torch.__version__) >= LooseVersion("1.1.0"):

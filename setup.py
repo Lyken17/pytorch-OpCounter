@@ -2,7 +2,6 @@
 import os, sys
 import shutil
 import datetime
-from tabnanny import verbose
 
 from setuptools import setup, find_packages
 from setuptools.command.install import install

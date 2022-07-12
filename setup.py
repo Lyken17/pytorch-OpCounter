@@ -2,13 +2,15 @@
 import os, sys
 import shutil
 import datetime
+from tabnanny import verbose
 
 from setuptools import setup, find_packages
 from setuptools.command.install import install
 
 readme = open("README.md").read()
 
-VERSION = "0.1.0"
+fp = open("thop/__version__.py", "r").read()
+VERSION = eval(fp.strip().split()[-1])
 
 requirements = [
     "torch",
@@ -18,7 +20,7 @@ requirements = [
 # commit_hash = subprocess.check_output("git rev-parse HEAD", shell=True).decode('UTF-8').rstrip()
 # VERSION += "_" + str(int(commit_hash, 16))[:8]
 VERSION += "_" + datetime.datetime.now().strftime("%Y%m%d%H%M")[2:]
-# print(VERSION)
+print(VERSION)
 
 setup(
     # Metadata

@@ -58,7 +58,16 @@ def count_convNd_ver2(m: _ConvNd, x, y: torch.Tensor):
 
 
 # def count_normalization(m: nn.modules.batchnorm._BatchNorm, x, y):
-# def count_normalization(m, x, y):
+#     # TODO: add test cases
+#     # https://github.com/Lyken17/pytorch-OpCounter/issues/124
+#     # y = (x - mean) / sqrt(eps + var) * weight + bias
+#     x = x[0]
+#     # bn is by default fused in inference
+#     flops = calculate_norm(x.numel())
+#     if m.affine:
+#         flops *= 2
+#     m.total_ops += flops
+
 def count_normalization(m: nn.modules.instancenorm._InstanceNorm, x, y):
     # TODO: add test cases
     # https://github.com/Lyken17/pytorch-OpCounter/issues/124
@@ -68,7 +77,11 @@ def count_normalization(m: nn.modules.instancenorm._InstanceNorm, x, y):
     flops = calculate_norm(x.numel())
     if m.affine:
         flops *= 2
-    m.total_ops += flops
+    try:
+        if m.total_ops:
+            m.total_ops += flops
+    except:
+        logging.warning('no m.total_ops')
 
 # def count_normalization(m: nn.modules.instancenorm._InstanceNorm, x, y):
 #     # TODO: add test cases

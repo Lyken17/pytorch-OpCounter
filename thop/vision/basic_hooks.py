@@ -14,7 +14,7 @@ def count_parameters(m, x, y):
         total_params += torch.DoubleTensor([p.numel()])
     # m.total_params[0] = calculate_parameters(m.parameters())
     try:
-        if m.total_params[0]:
+        if m.total_params:
             m.total_params[0] = calculate_parameters(m.parameters())
     except:
         logging.warning('no m.total_params[0]')

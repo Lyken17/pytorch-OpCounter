@@ -21,7 +21,12 @@ def count_parameters(m, x, y):
 
 
 def zero_ops(m, x, y):
-    m.total_ops += calculate_zero_ops()
+    try:
+        if m.total_ops:
+            m.total_ops += calculate_zero_ops()
+    except:
+        logging.warning('no m.total_ops zero_ops')
+    # m.total_ops += calculate_zero_ops()
 
 
 def count_convNd(m: _ConvNd, x, y: torch.Tensor):

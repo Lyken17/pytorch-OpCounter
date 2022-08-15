@@ -12,7 +12,12 @@ def count_parameters(m, x, y):
     total_params = 0
     for p in m.parameters():
         total_params += torch.DoubleTensor([p.numel()])
-    m.total_params[0] = calculate_parameters(m.parameters())
+    # m.total_params[0] = calculate_parameters(m.parameters())
+    try:
+        if m.total_params[0]:
+            m.total_params[0] = calculate_parameters(m.parameters())
+    except:
+        logging.warning('no m.total_params[0]')
 
 
 def zero_ops(m, x, y):
@@ -68,7 +73,7 @@ def count_convNd_ver2(m: _ConvNd, x, y: torch.Tensor):
 #         flops *= 2
 #     m.total_ops += flops
 
-def count_normalization(m: nn.modules.instancenorm._InstanceNorm, x, y):
+def count_normalization(m: nn.modules.batchnorm._BatchNorm, x, y):
     # TODO: add test cases
     # https://github.com/Lyken17/pytorch-OpCounter/issues/124
     # y = (x - mean) / sqrt(eps + var) * weight + bias

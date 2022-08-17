@@ -12,21 +12,11 @@ def count_parameters(m, x, y):
     total_params = 0
     for p in m.parameters():
         total_params += torch.DoubleTensor([p.numel()])
-    # m.total_params[0] = calculate_parameters(m.parameters())
-    try:
-        if m.total_params:
-            m.total_params[0] = calculate_parameters(m.parameters())
-    except:
-        logging.warning('no m.total_params[0]')
+    m.total_params[0] = calculate_parameters(m.parameters())
 
 
 def zero_ops(m, x, y):
-    try:
-        if m.total_ops:
-            m.total_ops += calculate_zero_ops()
-    except:
-        logging.warning('no m.total_ops zero_ops')
-    # m.total_ops += calculate_zero_ops()
+    m.total_ops += calculate_zero_ops()
 
 
 def count_convNd(m: _ConvNd, x, y: torch.Tensor):
@@ -67,17 +57,6 @@ def count_convNd_ver2(m: _ConvNd, x, y: torch.Tensor):
     m.total_ops += calculate_conv(m.bias.nelement(), m.weight.nelement(), output_size)
 
 
-# def count_normalization(m: nn.modules.batchnorm._BatchNorm, x, y):
-#     # TODO: add test cases
-#     # https://github.com/Lyken17/pytorch-OpCounter/issues/124
-#     # y = (x - mean) / sqrt(eps + var) * weight + bias
-#     x = x[0]
-#     # bn is by default fused in inference
-#     flops = calculate_norm(x.numel())
-#     if m.affine:
-#         flops *= 2
-#     m.total_ops += flops
-
 def count_normalization(m: nn.modules.batchnorm._BatchNorm, x, y):
     # TODO: add test cases
     # https://github.com/Lyken17/pytorch-OpCounter/issues/124
@@ -87,22 +66,7 @@ def count_normalization(m: nn.modules.batchnorm._BatchNorm, x, y):
     flops = calculate_norm(x.numel())
     if m.affine:
         flops *= 2
-    try:
-        if m.total_ops:
-            m.total_ops += flops
-    except:
-        logging.warning('no m.total_ops')
-
-# def count_normalization(m: nn.modules.instancenorm._InstanceNorm, x, y):
-#     # TODO: add test cases
-#     # https://github.com/Lyken17/pytorch-OpCounter/issues/124
-#     # y = (x - mean) / sqrt(eps + var) * weight + bias
-#     x = x[0]
-#     # bn is by default fused in inference
-#     flops = calculate_norm(x.numel())
-#     if m.affine:
-#         flops *= 2
-#     m.total_ops += flops
+    m.total_ops += flops
 
 
 # def count_layer_norm(m, x, y):

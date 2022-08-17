@@ -10,7 +10,7 @@ model_names = sorted(
     and callable(models.__dict__[name])
 )
 
-print("%s | %s | %s" % ("Model", "Params(M)", "MACs(G)"))
+print("%s | %s | %s" % ("Model", "Params(M)", "FLOPs(G)"))
 print("---|---|---")
 
 device = "cpu"

@@ -29,7 +29,7 @@ models = {
     ),
 }
 
-print("{} | {} | {}".format("Model", "Params(M)", "MACs(G)"))
+print("{} | {} | {}".format("Model", "Params(M)", "FLOPs(G)"))
 print("---|---|---")
 
 for name, model in models.items():

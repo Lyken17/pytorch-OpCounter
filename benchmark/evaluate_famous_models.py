@@ -2,9 +2,13 @@ import torch
 from torchvision import models
 from thop.profile import profile
 
-model_names = sorted(name for name in models.__dict__ if
-                     name.islower() and not name.startswith("__") # and "inception" in name
-                     and callable(models.__dict__[name]))
+model_names = sorted(
+    name
+    for name in models.__dict__
+    if name.islower()
+    and not name.startswith("__")  # and "inception" in name
+    and callable(models.__dict__[name])
+)
 
 print("%s | %s | %s" % ("Model", "Params(M)", "FLOPs(G)"))
 print("---|---|---")
@@ -20,4 +24,6 @@ for name in model_names:
         dsize = (1, 3, 299, 299)
     inputs = torch.randn(dsize).to(device)
     total_ops, total_params = profile(model, (inputs,), verbose=False)
-    print("%s | %.2f | %.2f" % (name, total_params / (1000 ** 2), total_ops / (1000 ** 3)))
+    print(
+        "%s | %.2f | %.2f" % (name, total_params / (1000 ** 2), total_ops / (1000 ** 3))
+    )

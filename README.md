@@ -35,12 +35,12 @@ OR
     Call `thop.clever_format` to give a better format of the output.
     ```python
     from thop import clever_format
-    macs, params = clever_format([flops, params], "%.3f")
+    macs, params = clever_format([macs, params], "%.3f")
     ```    
     
 ## Results of Recent Models
 
-The implementation are adapted from `torchvision`. Following results can be obtained using [benchmark/evaluate_famours_models.py](benchmark/evaluate_famous_models.py).
+The implementation are adapted from `torchvision`. Following results can be obtained using [benchmark/evaluate_famous_models.py](benchmark/evaluate_famous_models.py).
 
 <p align="center">
 <table>

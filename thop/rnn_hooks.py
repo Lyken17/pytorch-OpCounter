@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torch.nn.utils.rnn import PackedSequence
 
 
 def _count_rnn_cell(input_size, hidden_size, bias=True):
@@ -83,18 +84,22 @@ def count_lstm_cell(m: nn.LSTMCell, x: torch.Tensor, y: torch.Tensor):
     m.total_ops += torch.DoubleTensor([int(total_ops)])
 
 
-def count_rnn(m: nn.RNN, x: torch.Tensor, y: torch.Tensor):
+def count_rnn(m: nn.RNN, x, y):
     bias = m.bias
     input_size = m.input_size
     hidden_size = m.hidden_size
     num_layers = m.num_layers
 
-    if m.batch_first:
-        batch_size = x[0].size(0)
-        num_steps = x[0].size(1)
+    if isinstance(x[0], PackedSequence):
+        batch_size = torch.max(x[0].batch_sizes)
+        num_steps = x[0].batch_sizes.size(0)
     else:
-        batch_size = x[0].size(1)
-        num_steps = x[0].size(0)
+        if m.batch_first:
+            batch_size = x[0].size(0)
+            num_steps = x[0].size(1)
+        else:
+            batch_size = x[0].size(1)
+            num_steps = x[0].size(0)
 
     total_ops = 0
     if m.bidirectional:
@@ -104,8 +109,7 @@ def count_rnn(m: nn.RNN, x: torch.Tensor, y: torch.Tensor):
 
     for i in range(num_layers - 1):
         if m.bidirectional:
-            total_ops += _count_rnn_cell(hidden_size * 2, hidden_size,
-                                         bias) * 2
+            total_ops += _count_rnn_cell(hidden_size * 2, hidden_size, bias) * 2
         else:
             total_ops += _count_rnn_cell(hidden_size, hidden_size, bias)
 
@@ -117,18 +121,22 @@ def count_rnn(m: nn.RNN, x: torch.Tensor, y: torch.Tensor):
     m.total_ops += torch.DoubleTensor([int(total_ops)])
 
 
-def count_gru(m: nn.GRU, x: torch.Tensor, y: torch.Tensor):
+def count_gru(m: nn.GRU, x, y):
     bias = m.bias
     input_size = m.input_size
     hidden_size = m.hidden_size
     num_layers = m.num_layers
 
-    if m.batch_first:
-        batch_size = x[0].size(0)
-        num_steps = x[0].size(1)
+    if isinstance(x[0], PackedSequence):
+        batch_size = torch.max(x[0].batch_sizes)
+        num_steps = x[0].batch_sizes.size(0)
     else:
-        batch_size = x[0].size(1)
-        num_steps = x[0].size(0)
+        if m.batch_first:
+            batch_size = x[0].size(0)
+            num_steps = x[0].size(1)
+        else:
+            batch_size = x[0].size(1)
+            num_steps = x[0].size(0)
 
     total_ops = 0
     if m.bidirectional:
@@ -138,8 +146,7 @@ def count_gru(m: nn.GRU, x: torch.Tensor, y: torch.Tensor):
 
     for i in range(num_layers - 1):
         if m.bidirectional:
-            total_ops += _count_gru_cell(hidden_size * 2, hidden_size,
-                                         bias) * 2
+            total_ops += _count_gru_cell(hidden_size * 2, hidden_size, bias) * 2
         else:
             total_ops += _count_gru_cell(hidden_size, hidden_size, bias)
 
@@ -151,18 +158,22 @@ def count_gru(m: nn.GRU, x: torch.Tensor, y: torch.Tensor):
     m.total_ops += torch.DoubleTensor([int(total_ops)])
 
 
-def count_lstm(m: nn.LSTM, x: torch.Tensor, y: torch.Tensor):
+def count_lstm(m: nn.LSTM, x, y):
     bias = m.bias
     input_size = m.input_size
     hidden_size = m.hidden_size
     num_layers = m.num_layers
 
-    if m.batch_first:
-        batch_size = x[0].size(0)
-        num_steps = x[0].size(1)
+    if isinstance(x[0], PackedSequence):
+        batch_size = torch.max(x[0].batch_sizes)
+        num_steps = x[0].batch_sizes.size(0)
     else:
-        batch_size = x[0].size(1)
-        num_steps = x[0].size(0)
+        if m.batch_first:
+            batch_size = x[0].size(0)
+            num_steps = x[0].size(1)
+        else:
+            batch_size = x[0].size(1)
+            num_steps = x[0].size(0)
 
     total_ops = 0
     if m.bidirectional:
@@ -172,8 +183,7 @@ def count_lstm(m: nn.LSTM, x: torch.Tensor, y: torch.Tensor):
 
     for i in range(num_layers - 1):
         if m.bidirectional:
-            total_ops += _count_lstm_cell(hidden_size * 2, hidden_size,
-                                          bias) * 2
+            total_ops += _count_lstm_cell(hidden_size * 2, hidden_size, bias) * 2
         else:
             total_ops += _count_lstm_cell(hidden_size, hidden_size, bias)
 

@@ -203,6 +203,10 @@ def profile(
             )
         types_collection.add(m_type)
 
+    def remove_buffers(m: nn.Module):
+        m._buffers.pop("total_ops")
+        m._buffers.pop("total_params")
+
     prev_training_status = model.training
 
     model.eval()
@@ -239,8 +243,7 @@ def profile(
     for m, (op_handler, params_handler) in handler_collection.items():
         op_handler.remove()
         params_handler.remove()
-        m._buffers.pop("total_ops")
-        m._buffers.pop("total_params")
+    model.apply(remove_buffers)
 
     if ret_layer_info:
         return total_ops, total_params, ret_dict

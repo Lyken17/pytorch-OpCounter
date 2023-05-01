@@ -30,7 +30,7 @@ jobs:
       run: |
         if pip search thop | grep -o "\((.*)\)" | xargs python .github/workflows/date_extraction.py -m ; then
           echo "There has been more than one week since last update, start to build."
-          python setup.py bdist_wheel
+          python setup.py sdist bdist_wheel
           twine check dist/*
           twine upload dist/*
         else

@@ -1,4 +1,4 @@
-from distutils.version import LooseVersion
+import pkg_resources as pkg
 
 from thop.vision.basic_hooks import *
 from thop.rnn_hooks import *
@@ -9,7 +9,7 @@ from thop.rnn_hooks import *
 
 from .utils import prGreen, prRed, prYellow
 
-if LooseVersion(torch.__version__) < LooseVersion("1.0.0"):
+if pkg.parse_version(torch.__version__) < pkg.parse_version("1.0.0"):
     logging.warning(
         "You are using an old version PyTorch {version}, which THOP does NOT support.".format(
             version=torch.__version__
@@ -65,7 +65,7 @@ register_hooks = {
     nn.PixelShuffle: zero_ops,
 }
 
-if LooseVersion(torch.__version__) >= LooseVersion("1.1.0"):
+if pkg.parse_version(torch.__version__) >= pkg.parse_version("1.1.0"):
     register_hooks.update({nn.SyncBatchNorm: count_normalization})
 
 

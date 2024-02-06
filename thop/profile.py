@@ -157,6 +157,7 @@ def profile_origin(model, inputs, custom_ops=None, verbose=True, report_missing=
 def profile(
     model: nn.Module,
     inputs,
+    kwargs={},
     custom_ops=None,
     verbose=True,
     ret_layer_info=False,
@@ -209,7 +210,7 @@ def profile(
     model.apply(add_hooks)
 
     with torch.no_grad():
-        model(*inputs)
+        model(*inputs, **kwargs)
 
     def dfs_count(module: nn.Module, prefix="\t") -> (int, int):
         total_ops, total_params = module.total_ops.item(), 0
